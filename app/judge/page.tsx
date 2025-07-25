@@ -669,6 +669,18 @@ export default function A42zJudgeWorkflow() {
 
   const anyStepExpanded = workflowSteps.some(step => step.isExpanded);
 
+  // 在 A42zJudgeWorkflow 组件内，定义一个 handleLogout 函数：
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setIsLoggedIn(false);
+    setShowLogin(true);
+    setUserEmail(null);
+    if (typeof window !== 'undefined') {
+      localStorage.clear();
+      sessionStorage.clear();
+    }
+  };
+
   return (
     <>
       <nav className="fixed top-8 left-1/2 -translate-x-1/2 z-50 flex gap-4 px-6 py-2 rounded-xl backdrop-blur bg-black/60 border border-white/10 shadow-lg transition-all duration-300 sm:top-2 sm:gap-2 sm:px-2 sm:py-1 sm:text-xs sm:rounded-lg" style={{width:'max-content'}}>
@@ -863,7 +875,7 @@ export default function A42zJudgeWorkflow() {
       {/* 修改右上角 avatar 的定位和样式 */}
       <div className="fixed top-8 right-8 z-50">
         {isLoggedIn && (
-          <AccountDropdown userEmail={userEmail} onLogout={async () => { await supabase.auth.signOut(); }} />
+          <AccountDropdown userEmail={userEmail} onLogout={handleLogout} />
         )}
       </div>
     </>
