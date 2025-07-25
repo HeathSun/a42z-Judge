@@ -11,6 +11,7 @@ import { FlickeringGrid } from "@/components/magicui/flickering-grid";
 import { RainbowButton } from "@/components/magicui/rainbow-button";
 import Link from "next/link";
 import { MagicCard } from "@/components/magicui/magic-card";
+import Image from 'next/image';
 
 // Types
 interface KeywordTab {
@@ -688,7 +689,7 @@ export default function A42zJudgeWorkflow() {
               }}
             >
               <div className="flex items-center justify-center gap-2 mb-2">
-                <img src="https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img//a42z-black.png" alt="a42z" style={{height: '1.25em', width: 'auto', display: 'inline-block', verticalAlign: 'middle'}} />
+                <Image src="https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img//a42z-black.png" alt="a42z" width={20} height={20} />
                 <span className="text-xl text-black align-middle" style={{lineHeight: '1.75em', display: 'inline-block'}}>Early Access</span>
               </div>
               <input
@@ -719,7 +720,7 @@ export default function A42zJudgeWorkflow() {
               className="text-4xl font-bold text-white mb-2 flex justify-center items-center"
               style={{ fontFamily: "'Chakra Petch', sans-serif" }}
             >
-              <img src="https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img//a42z.png" alt="a42z Judge Logo" style={{ height: '2.5em', maxWidth: '100%', objectFit: 'contain' }} />
+              <Image src="https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img//a42z.png" alt="a42z Judge Logo" width={100} height={100} />
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: -10 }}
