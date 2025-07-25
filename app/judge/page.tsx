@@ -689,7 +689,7 @@ export default function A42zJudgeWorkflow() {
               }}
             >
               <div className="flex items-center justify-center gap-2 mb-2">
-                <Image src="https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img//a42z-black.png" alt="a42z" width={20} height={20} />
+                <Image src="https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img//a42z-black.png" alt="a42z" width={80} height={80} />
                 <span className="text-xl text-black align-middle" style={{lineHeight: '1.75em', display: 'inline-block'}}>Early Access</span>
               </div>
               <input
@@ -720,7 +720,7 @@ export default function A42zJudgeWorkflow() {
               className="text-4xl font-bold text-white mb-2 flex justify-center items-center"
               style={{ fontFamily: "'Chakra Petch', sans-serif" }}
             >
-              <Image src="https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img//a42z.png" alt="a42z Judge Logo" width={100} height={100} />
+              <Image src="https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img//a42z.png" alt="a42z Judge Logo" width={400} height={400} />
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: -10 }}
