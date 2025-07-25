@@ -26,7 +26,7 @@ interface KeywordTab {
 interface UploadedFile {
   id: string
   name: string
-  type: "pdf" | "github" | "code" | "image"
+  type: "pdf" | "github"
   status: "uploading" | "completed" | "error"
 }
 
@@ -293,15 +293,11 @@ function FileUploadSection({
   const fileInputRefs = {
     pdf: useRef<HTMLInputElement>(null),
     github: useRef<HTMLInputElement>(null),
-    code: useRef<HTMLInputElement>(null),
-    image: useRef<HTMLInputElement>(null),
   }
 
   const uploadTypes = [
     { type: "pdf" as const, label: "Pitch Deck PDF", icon: FileText, required: true },
     { type: "github" as const, label: "GitHub Repo", icon: Github, required: false },
-    { type: "code" as const, label: "Core Code Sample", icon: FileText, required: false },
-    { type: "image" as const, label: "Tech Roadmap", icon: Upload, required: false },
   ]
 
   const handleFileSelect = (type: UploadedFile["type"]) => {
@@ -327,7 +323,7 @@ function FileUploadSection({
               type="file"
               onChange={(e) => handleFileChange(e, type)}
               className="hidden"
-              accept={type === "pdf" ? ".pdf" : type === "image" ? "image/*" : "*"}
+              accept={type === "pdf" ? ".pdf" : type === "github" ? "*" : "*"}
             />
 
             <ShimmerButton
