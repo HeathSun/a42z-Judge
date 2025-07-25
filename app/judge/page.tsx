@@ -728,7 +728,7 @@ export default function A42zJudgeWorkflow() {
               transition={{ delay: 0.1 }}
               className="text-zinc-400"
             >
-              The World's First AI Judge for Hackathons — Autonomous, Insightful, and Fair.
+              The World&apos;s First AI Judge for Hackathons — Autonomous, Insightful, and Fair.
             </motion.p>
           </div>
 
