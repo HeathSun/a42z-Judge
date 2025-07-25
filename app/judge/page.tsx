@@ -409,8 +409,6 @@ export default function A42zJudgeWorkflow() {
   const [twins] = useState<AITwin[]>(aiTwins)
   const [debateRound] = useState(1)
   const [isStarted, setIsStarted] = useState(false)
-  const [showNav, setShowNav] = useState(true);
-  const [lastScroll, setLastScroll] = useState(0);
   const [showRankModal, setShowRankModal] = useState(false);
   const [showLogin, setShowLogin] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -426,11 +424,11 @@ export default function A42zJudgeWorkflow() {
         window.requestAnimationFrame(() => {
           const y = window.scrollY;
           if (y > lastY) {
-            setShowNav(false); // hide on scroll down
+            // setShowNav(false); // hide on scroll down
           } else if (y < lastY) {
-            setShowNav(true); // show on scroll up
+            // setShowNav(true); // show on scroll up
           }
-          setLastScroll(y);
+          // setLastScroll(y);
           lastY = y;
           ticking = false;
         });
@@ -438,10 +436,14 @@ export default function A42zJudgeWorkflow() {
       }
     };
     const handleMouseMove = (e: MouseEvent) => {
-      if (e.clientY < 32) setShowNav(true); // show if mouse at top
+      if (e.clientY < 32) {
+        // setShowNav(true); // show if mouse at top
+      }
     };
     const handleTouchStart = (e: TouchEvent) => {
-      if (e.touches[0]?.clientY < 32) setShowNav(true); // show if tap top
+      if (e.touches[0]?.clientY < 32) {
+        // setShowNav(true); // show if tap top
+      }
     };
     window.addEventListener("scroll", handleScroll);
     window.addEventListener("mousemove", handleMouseMove);
