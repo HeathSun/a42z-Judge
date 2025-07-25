@@ -4,7 +4,6 @@ import { FlickeringGrid } from "@/components/magicui/flickering-grid";
 import { RainbowButton } from "@/components/magicui/rainbow-button";
 import { WarpBackground } from "@/components/magicui/warp-background";
 import Link from "next/link";
-import { HyperText } from "@/components/magicui/hyper-text";
 import { TextAnimate } from "@/components/magicui/text-animate";
 
 export default function ManifestoPage() {
@@ -48,12 +47,12 @@ export default function ManifestoPage() {
           <div className="prose prose-invert max-w-3xl w-full mx-auto text-lg text-white prose-headings:text-white prose-h2:mt-14 prose-h3:mt-14 prose-h3:mb-6 prose-h2:mb-8 prose-p:my-6 prose-p:mb-8 prose-blockquote:my-8 prose-ul:my-6 prose-li:my-2 prose-blockquote:text-white prose-blockquote:border-white/30 prose-li:marker:text-white">
             <TextAnimate animation="blurIn" as="p">Computing technical trust. At scale.</TextAnimate>
             <TextAnimate animation="blurIn" as="h2" className="text-3xl mt-24 mb-6 font-bold">What is a42z?</TextAnimate>
-            <TextAnimate animation="blurIn" as="blockquote">In a world where anyone can fake a demo, we exist to verify what's real.</TextAnimate>
-            <TextAnimate animation="blurIn" as="p">a42z is not just a brand. It’s a bet.</TextAnimate>
+            <TextAnimate animation="blurIn" as="blockquote">In a world where anyone can fake a demo, we exist to verify what&apos;s real.</TextAnimate>
+            <TextAnimate animation="blurIn" as="p">a42z is not just a brand. It&rsquo;s a bet.</TextAnimate>
             <TextAnimate animation="blurIn" as="p">A bet that truth matters in an era flooded with demos, hype, and synthetic signals.</TextAnimate>
             <TextAnimate animation="blurIn" as="p">A bet that real technology should speak for itself.</TextAnimate>
-            <TextAnimate animation="blurIn" as="p">We’re building the technical trust layer for the age of AI.</TextAnimate>
-            <TextAnimate animation="blurIn" as="p">Where others judge projects by pitch decks, we read the code’s heartbeat.</TextAnimate>
+            <TextAnimate animation="blurIn" as="p">We&rsquo;re building the technical trust layer for the age of AI.</TextAnimate>
+            <TextAnimate animation="blurIn" as="p">Where others judge projects by pitch decks, we read the code&rsquo;s heartbeat.</TextAnimate>
             <TextAnimate animation="blurIn" as="p">Where others accept screenshots, we verify models in motion.</TextAnimate>
             <TextAnimate animation="blurIn" as="p">Where others see hype, we see signal.</TextAnimate>
             <hr />

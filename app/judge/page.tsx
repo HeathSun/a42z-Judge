@@ -10,7 +10,6 @@ import { ShinyButton } from "@/components/magicui/shiny-button";
 import { FlickeringGrid } from "@/components/magicui/flickering-grid";
 import { RainbowButton } from "@/components/magicui/rainbow-button";
 import Link from "next/link";
-import { TypingAnimation } from "@/components/magicui/typing-animation";
 import { MagicCard } from "@/components/magicui/magic-card";
 
 // Types
@@ -124,19 +123,6 @@ function CitationTooltip({ citation, children }: { citation: Citation; children:
 
 // Expandable Card Component
 function WorkflowCard({ step, onToggle }: { step: WorkflowStep; onToggle: (id: string) => void }) {
-  const getStatusIcon = () => {
-    switch (step.status) {
-      case "loading":
-        return <Loader2 className="w-4 h-4 animate-spin text-white-400" />
-      case "completed":
-        return <div className="w-2 h-2 bg-green-400 rounded-full" />
-      case "error":
-        return <div className="w-2 h-2 bg-red-400 rounded-full" />
-      default:
-        return <div className="w-2 h-2 bg-zinc-600 rounded-full" />
-    }
-  }
-
   return (
     <motion.div
       layout
@@ -420,8 +406,8 @@ export default function A42zJudgeWorkflow() {
   const [files, setFiles] = useState<UploadedFile[]>([])
   const [workflowSteps, setWorkflowSteps] = useState<WorkflowStep[]>([])
   const [currentStep, setCurrentStep] = useState(0)
-  const [twins, setTwins] = useState<AITwin[]>(aiTwins)
-  const [debateRound, setDebateRound] = useState(1)
+  const [twins] = useState<AITwin[]>(aiTwins)
+  const [debateRound] = useState(1)
   const [isStarted, setIsStarted] = useState(false)
   const [showNav, setShowNav] = useState(true);
   const [lastScroll, setLastScroll] = useState(0);

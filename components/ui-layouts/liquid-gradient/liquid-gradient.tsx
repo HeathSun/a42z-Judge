@@ -1,5 +1,5 @@
 'use client';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 type ColorKey =
   | 'color1'
   | 'color2'
@@ -50,10 +50,10 @@ const createStopsArray = (
   svgOrder: readonly SvgKey[],
   maxStops: number
 ): Stop[][] => {
-  let stopsArray: Stop[][] = [];
+  const stopsArray: Stop[][] = [];
   for (let i = 0; i < maxStops; i++) {
-    let stopConfigurations = svgOrder.map((svgKey) => {
-      let svg = svgStates[svgKey];
+    const stopConfigurations = svgOrder.map((svgKey) => {
+      const svg = svgStates[svgKey];
       return svg.stops[i] || svg.stops[svg.stops.length - 1];
     });
     stopsArray.push(stopConfigurations);
@@ -157,18 +157,16 @@ const GradientSvg: React.FC<GradientSvgProps> = ({
     ...Object.values(svgStates).map((svg) => svg.stops.length)
   );
   const stopsAnimationArray = createStopsArray(svgStates, svgOrder, maxStops);
-  const gradientTransform = svgOrder.map(
-    (svgKey) => svgStates[svgKey].gradientTransform
-  );
+  const gradientTransform = svgStates[svgOrder[0]].gradientTransform;
 
   const variants = {
     hovered: {
       gradientTransform: gradientTransform,
-      transition: { duration: 50, repeat: Infinity, ease: 'linear' },
+      transition: { duration: 50, repeat: Infinity, ease: (t: number) => t },
     },
     notHovered: {
       gradientTransform: gradientTransform,
-      transition: { duration: 10, repeat: Infinity, ease: 'linear' },
+      transition: { duration: 10, repeat: Infinity, ease: (t: number) => t },
     },
   };
 
