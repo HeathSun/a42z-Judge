@@ -1,8 +1,7 @@
 "use client"
 
-import type React from "react"
+import React, { useState, useRef, useEffect } from "react"
 
-import { useState, useRef, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { ChevronRight, Upload, Github, FileText, X, Plus, ExternalLink, Loader2 } from "lucide-react"
 import { ShimmerButton } from "@/components/magicui/shimmer-button";
@@ -12,6 +11,10 @@ import { RainbowButton } from "@/components/magicui/rainbow-button";
 import Link from "next/link";
 import { MagicCard } from "@/components/magicui/magic-card";
 import Image from 'next/image';
+import { supabase } from '@/lib/supabase';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { User2 } from 'lucide-react';
+import { ShineBorder } from '@/components/magicui/shine-border';
 
 // Types
 interface KeywordTab {
@@ -416,6 +419,7 @@ export default function A42zJudgeWorkflow() {
   const [loginEmail, setLoginEmail] = useState("");
   const [loginError, setLoginError] = useState("");
   const [loginFading, setLoginFading] = useState(false);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
 
   useEffect(() => {
     let ticking = false;
@@ -453,6 +457,34 @@ export default function A42zJudgeWorkflow() {
       window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("touchstart", handleTouchStart);
+    };
+  }, []);
+
+  useEffect(() => {
+    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session && session.user) {
+        setIsLoggedIn(true);
+        setShowLogin(false);
+        setLoginFading(false);
+        setUserEmail(session.user.email ?? null);
+      } else {
+        setIsLoggedIn(false);
+        setUserEmail(null);
+      }
+    });
+
+    // 检查初始登录状态（页面刷新后自动登录）
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session && session.user) {
+        setIsLoggedIn(true);
+        setShowLogin(false);
+        setLoginFading(false);
+        setUserEmail(session.user.email ?? null);
+      }
+    });
+
+    return () => {
+      listener?.subscription.unsubscribe();
     };
   }, []);
 
@@ -671,37 +703,27 @@ export default function A42zJudgeWorkflow() {
           className={`fixed inset-0 z-[200] flex items-center justify-center bg-black/40 backdrop-blur-sm transition-opacity duration-500 ${loginFading ? 'opacity-0' : 'opacity-100'}`}
         >
           <MagicCard className="rounded-2xl shadow-2xl border-2 border-white/30 bg-gradient-to-b from-zinc-200 to-zinc-100 max-w-sm w-full mx-4">
-            <form
-              className="flex flex-col items-center gap-4 p-8"
-              onSubmit={e => {
-                e.preventDefault();
-                if (!loginEmail.match(/^[^@\s]+@[^@\s]+\.[^@\s]+$/)) {
-                  setLoginError("Please enter a valid email address.");
-                  return;
-                }
-                setLoginError("");
-                setLoginFading(true);
-                setTimeout(() => {
-                  setIsLoggedIn(true);
-                  setShowLogin(false);
-                  setLoginFading(false);
-                }, 500);
-              }}
-            >
+            <form className="flex flex-col items-center gap-4 p-8" onSubmit={e => e.preventDefault()}>
               <div className="flex items-center justify-center gap-2 mb-2">
                 <Image src="https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img//a42z-black.png" alt="a42z" width={80} height={80} />
                 <span className="text-xl text-black align-middle" style={{lineHeight: '1.75em', display: 'inline-block'}}>Early Access</span>
               </div>
-              <input
-                type="email"
-                className="w-full px-4 py-2 rounded bg-zinc-100 border border-zinc-300 text-black placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-black/20"
-                placeholder="Enter your email"
-                value={loginEmail}
-                onChange={e => setLoginEmail(e.target.value)}
-                required
-              />
               {loginError && <span className="text-red-400 text-sm">{loginError}</span>}
-              <button type="submit" className="mt-2 px-6 py-2 rounded-lg bg-zinc-200 text-black hover:bg-zinc-300 transition font-semibold">Login</button>
+              <div className="flex flex-col gap-2 w-full mt-4">
+                <RainbowButton
+                  type="button"
+                  onClick={async () => {
+                    const { error } = await supabase.auth.signInWithOAuth({ provider: 'google' });
+                    if (error) setLoginError(error.message);
+                  }}
+                  className="w-full"
+                >
+                  <span className="inline-flex items-center gap-2">
+                    <Image src="https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img//google.png" alt="Google logo" width={20} height={20} style={{ display: 'inline-block', verticalAlign: 'middle' }} />
+                    Sign in with Google
+                  </span>
+                </RainbowButton>
+              </div>
             </form>
           </MagicCard>
         </div>
@@ -839,6 +861,81 @@ export default function A42zJudgeWorkflow() {
           </div>
         </div>
       </div>
+      {/* 修改右上角 avatar 的定位和样式 */}
+      <div className="fixed top-8 right-8 z-50">
+        {isLoggedIn && (
+          <AccountDropdown userEmail={userEmail} onLogout={async () => { await supabase.auth.signOut(); }} />
+        )}
+      </div>
     </>
   )
+}
+
+function AccountDropdown({ userEmail, onLogout }: { userEmail: string | null, onLogout: () => void }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  // 点击外部关闭
+  React.useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    if (open) document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [open]);
+
+  return (
+    <div ref={ref} className="relative flex items-center">
+      <motion.div
+        whileTap={{ scale: 0.95 }}
+        className="cursor-pointer"
+        onClick={() => setOpen((v) => !v)}
+      >
+        <Avatar className="size-10 border border-white/20 shadow-lg bg-white/80">
+          <AvatarImage src="https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img//user1.png" alt="user avatar" />
+          <AvatarFallback>
+            <User2 className="w-6 h-6 text-zinc-500" />
+          </AvatarFallback>
+        </Avatar>
+      </motion.div>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: -10, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10, scale: 0.98 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+            className="absolute right-0 top-[56px] min-w-[240px] rounded-xl bg-white/95 shadow-2xl border border-zinc-200 flex flex-col items-stretch p-4 gap-2 overflow-hidden"
+            style={{ zIndex: 100, maxWidth: 'calc(100vw - 16px)' }}
+          >
+            <ShineBorder borderWidth={2} shineColor={["#e0e0e0", "#a5b4fc", "#f472b6"]} className="z-0" />
+            <div className="relative z-10">
+              <div className="flex items-center gap-3 mb-2">
+                <Avatar className="size-10 border-2 border-zinc-300 shadow-lg bg-zinc-100">
+                  <AvatarImage src="https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img//user1.png" alt="user avatar" />
+                  <AvatarFallback>
+                    <User2 className="w-5 h-5 text-zinc-500" />
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <div className="truncate text-zinc-900 font-medium text-sm">Account</div>
+                  {userEmail && (
+                    <div className="truncate text-xs text-zinc-500 select-all">{userEmail}</div>
+                  )}
+                </div>
+              </div>
+              <RainbowButton
+                className="w-full text-center text-sm mt-1"
+                onClick={onLogout}
+              >
+                Logout
+              </RainbowButton>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
 }
