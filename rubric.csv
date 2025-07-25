@@ -1,0 +1,29 @@
+Category,Subcategory,Weight,Description,Max_Score
+Innovation,Technical_Novelty,15,"How technically innovative is the solution? Does it introduce new approaches, algorithms, or technologies?",15
+Innovation,Problem_Solving,10,"How well does the solution address the identified problem? Is the problem real and significant?",10
+Innovation,Creativity,10,"How creative and original is the approach? Does it think outside the box?",10
+Technical_Execution,Code_Quality,12,"Is the code well-structured, readable, and maintainable? Are best practices followed?",12
+Technical_Execution,Architecture,10,"Is the system architecture sound and scalable? Are design patterns used appropriately?",10
+Technical_Execution,Performance,8,"How well does the system perform? Is it optimized for its use case?",8
+Technical_Execution,Testing,5,"Is there adequate testing coverage? Are edge cases handled?",5
+Business_Potential,Market_Size,10,"What is the potential market size? Is there a clear path to monetization?",10
+Business_Potential,Competitive_Advantage,8,"What competitive advantages does the solution have? Is it defensible?",8
+Business_Potential,Go_to_Market,7,"Is there a clear go-to-market strategy? How feasible is implementation?",7
+User_Experience,Usability,8,"How user-friendly is the interface? Is the user experience intuitive?",8
+User_Experience,Design,5,"Is the design polished and professional? Does it follow design principles?",5
+User_Experience,Accessibility,2,"Is the solution accessible to users with disabilities?",2
+Documentation,Code_Documentation,3,"Is the code well-documented? Are APIs and functions explained?",3
+Documentation,User_Documentation,2,"Is there clear user documentation? Can users understand how to use the solution?",2
+Documentation,Technical_Writing,2,"Is the technical writing clear and professional?",2
+Team_Capability,Technical_Skills,3,"Do team members demonstrate strong technical skills?",3
+Team_Capability,Execution_Ability,2,"Can the team execute on their vision? Do they have the necessary skills?",2
+Feasibility,Technical_Feasibility,3,"Is the solution technically feasible to implement?",3
+Feasibility,Resource_Requirements,2,"Are the resource requirements reasonable? Can it be built with available resources?",2
+Impact,Social_Impact,5,"What is the potential social impact? Does it benefit society?",5
+Impact,Environmental_Impact,3,"What is the environmental impact? Is it sustainable?",3
+Scalability,Technical_Scalability,5,"Can the solution scale to handle growth? Is the architecture scalable?",5
+Scalability,Business_Scalability,3,"Can the business model scale? Is there potential for growth?",3
+Security,Data_Security,3,"Are security best practices followed? Is user data protected?",3
+Security,Privacy,2,"Is user privacy respected? Are privacy regulations considered?",2
+Integration,API_Integration,2,"How well does it integrate with existing systems? Are APIs well-designed?",2
+Integration,Third_Party_Services,1,"Are third-party services used effectively? Is there vendor lock-in?",1 
