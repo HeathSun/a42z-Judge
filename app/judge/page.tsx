@@ -416,7 +416,6 @@ export default function A42zJudgeWorkflow() {
   const [showRankModal, setShowRankModal] = useState(false);
   const [showLogin, setShowLogin] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [loginEmail, setLoginEmail] = useState("");
   const [loginError, setLoginError] = useState("");
   const [loginFading, setLoginFading] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
