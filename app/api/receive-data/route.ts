@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
     });
 
     // 存储到 Supabase 数据库（如果配置了的话）
-    if (body.github_url && body.workflow_result && typeof body.workflow_result === 'string') {
+    if (body.github_url && body.workflow_result && typeof body.github_url === 'string' && typeof body.workflow_result === 'string') {
       try {
         const { data, error } = await supabase
           .from('judge_comments')

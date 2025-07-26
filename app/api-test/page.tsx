@@ -2,8 +2,10 @@
 
 import { useState } from 'react';
 
+type ApiTestResult = string | Record<string, unknown> | null;
+
 export default function ApiTestPage() {
-  const [testResult, setTestResult] = useState<string>('');
+  const [testResult, setTestResult] = useState<ApiTestResult>(null);
   const [loading, setLoading] = useState(false);
 
   const testApiEndpoint = async () => {
@@ -13,9 +15,9 @@ export default function ApiTestPage() {
         method: 'GET'
       });
       const data = await response.json();
-      setTestResult(JSON.stringify(data, null, 2));
+      setTestResult(data as Record<string, unknown>);
     } catch (error) {
-      setTestResult(JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }));
+      setTestResult(error instanceof Error ? error.message : 'Unknown error');
     } finally {
       setLoading(false);
     }
@@ -43,9 +45,9 @@ export default function ApiTestPage() {
         body: JSON.stringify(testData)
       });
       const data = await response.json();
-      setTestResult(JSON.stringify(data, null, 2));
+      setTestResult(data as Record<string, unknown>);
     } catch (error) {
-      setTestResult(JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }));
+      setTestResult(error instanceof Error ? error.message : 'Unknown error');
     } finally {
       setLoading(false);
     }
@@ -102,11 +104,13 @@ export default function ApiTestPage() {
           </div>
         </div>
 
-        {testResult && (
+        {testResult !== null && (
           <div className="bg-white shadow rounded-lg p-6">
             <h3 className="text-lg font-semibold mb-4">测试结果</h3>
             <pre className="bg-gray-100 p-4 rounded text-sm overflow-auto">
-              {testResult}
+              {typeof testResult === 'string'
+                ? testResult
+                : JSON.stringify(testResult, null, 2)}
             </pre>
           </div>
         )}

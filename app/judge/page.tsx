@@ -98,30 +98,30 @@ interface TerminalStep {
   apiCall?: ApiCall;
 }
 
-// interface DatabaseAnalysis {
-//   id: string;
-//   conversation_id: string;
-//   github_repo_url: string;
-//   gmail: string;
-//   analysis_result: string;
-//   analysis_metadata?: {
-//     usage?: {
-//       total_tokens?: number;
-//       prompt_tokens?: number;
-//       completion_tokens?: number;
-//     };
-//   };
-//   comment_cn_ng?: string;
-//   comment_en_ng?: string;
-//   comment_cn_paul?: string;
-//   comment_en_paul?: string;
-//   comment_cn_li?: string;
-//   comment_en_li?: string;
-//   comment_cn_sam?: string;
-//   comment_en_sam?: string;
-//   created_at: string;
-//   updated_at: string;
-// }
+interface DatabaseAnalysis {
+  id: string;
+  conversation_id: string;
+  github_repo_url: string;
+  gmail: string;
+  analysis_result: string;
+  analysis_metadata?: {
+    usage?: {
+      total_tokens?: number;
+      prompt_tokens?: number;
+      completion_tokens?: number;
+    };
+  };
+  comment_cn_ng?: string;
+  comment_en_ng?: string;
+  comment_cn_paul?: string;
+  comment_en_paul?: string;
+  comment_cn_li?: string;
+  comment_en_li?: string;
+  comment_cn_sam?: string;
+  comment_en_sam?: string;
+  created_at: string;
+  updated_at: string;
+}
 
 function TerminalSteps({ steps, isVisible, stepType = "business-research" }: { steps: string[], isVisible: boolean, stepType?: string }) {
   const [completedSteps, setCompletedSteps] = useState<string[]>([]);
@@ -1285,6 +1285,40 @@ export default function A42zJudgeWorkflow() {
       setShowLogin(false);
       setLoginFading(false);
       setUserEmail('localhost@a42z.dev');
+    } else {
+      // 检查用户登录状态
+      const checkUser = async () => {
+        const { data: { user }, error } = await supabase.auth.getUser();
+        if (user && !error) {
+          setIsLoggedIn(true);
+          setShowLogin(false);
+          setUserEmail(user.email);
+        } else {
+          setIsLoggedIn(false);
+          setShowLogin(true);
+          setUserEmail(null);
+        }
+      };
+      
+      checkUser();
+      
+      // 监听认证状态变化
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(
+        async (event, session) => {
+          if (event === 'SIGNED_IN' && session?.user) {
+            setIsLoggedIn(true);
+            setShowLogin(false);
+            setUserEmail(session.user.email);
+            setLoginError('');
+          } else if (event === 'SIGNED_OUT') {
+            setIsLoggedIn(false);
+            setShowLogin(true);
+            setUserEmail(null);
+          }
+        }
+      );
+      
+      return () => subscription.unsubscribe();
     }
 
     // 配置Dify webhook
