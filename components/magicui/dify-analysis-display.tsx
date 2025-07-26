@@ -327,7 +327,7 @@ export function DifyAnalysisDisplay({
               <h4 className="text-white font-medium mb-3">Full Analysis</h4>
               <AnswerDisplay 
                 answer={analysisData.answer}
-                judgeName="Technical Homogeneity Analyzer"
+                judgeName="Agent Run"
                 isVisible={true}
               />
             </div>
