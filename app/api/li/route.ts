@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 // 存储接收到的数据（用于调试和临时存储）
-const receivedData = new Map<string, any>();
+const receivedData = new Map<string, Record<string, unknown>>();
 
 export async function POST(request: NextRequest) {
   try {
