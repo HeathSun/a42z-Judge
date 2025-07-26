@@ -3,8 +3,10 @@
 import { cn } from "@/lib/utils";
 import { motion } from "motion/react";
 import { useEffect, useState } from "react";
-import { TypingAnimation } from "./typing-animation";
-import { AnswerDisplay } from "./answer-display";
+import {
+  AnimatedSpan,
+  Terminal,
+} from "@/components/magicui/terminal";
 import { 
   Search, 
   Code, 
@@ -313,52 +315,52 @@ export function DifyAnalysisDisplay({
           <div className="space-y-4">
             <div className="bg-white/5 p-4 rounded-lg border border-white/10">
               <h4 className="text-white font-medium mb-2">Analysis Summary</h4>
-              <TypingAnimation
-                className="text-gray-300 text-sm leading-relaxed font-['Noto_Sans_SC']"
-                duration={50}
-                delay={500}
-              >
-                {displayedAnalysis.summary || "Analysis completed successfully. The repository has been thoroughly evaluated for technical homogeneity and compared with similar projects in the ecosystem."}
-              </TypingAnimation>
+              <Terminal className="max-h-32 overflow-y-auto">
+                <AnimatedSpan className="text-gray-300 text-sm leading-relaxed font-['Noto_Sans_SC']">
+                  {displayedAnalysis.summary || "Analysis completed successfully. The repository has been thoroughly evaluated for technical homogeneity and compared with similar projects in the ecosystem."}
+                </AnimatedSpan>
+              </Terminal>
             </div>
 
             {/* 完整答案显示 */}
             <div className="bg-white/5 p-4 rounded-lg border border-white/10">
               <h4 className="text-white font-medium mb-3">Full Analysis</h4>
-              <AnswerDisplay 
-                answer={analysisData.answer}
-                judgeName="Agent Run"
-                isVisible={true}
-              />
+              <Terminal className="max-h-64 overflow-y-auto">
+                <AnimatedSpan className="text-gray-300 text-sm leading-relaxed font-['Noto_Sans_SC']">
+                  {analysisData.answer}
+                </AnimatedSpan>
+              </Terminal>
             </div>
 
             {/* 相似项目评分 */}
             <div className="bg-white/5 p-4 rounded-lg border border-white/10">
               <h4 className="text-white font-medium mb-3">Similarity Scores</h4>
-              <div className="space-y-2">
-                {displayedAnalysis.scores?.map((score, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.2 }}
-                    className="flex items-center justify-between p-2 bg-white/5 rounded border border-white/10"
-                  >
-                    <span className="text-gray-300 text-sm">{score}</span>
-                    <div className="flex items-center gap-2">
-                      <div className="w-20 bg-gray-700 rounded-full h-2">
-                        <div 
-                          className="bg-gradient-to-r from-blue-500 to-green-500 h-2 rounded-full"
-                          style={{ width: `${Math.floor(Math.random() * 40 + 60)}%` }}
-                        />
+              <Terminal className="max-h-48 overflow-y-auto">
+                <div className="space-y-2">
+                  {displayedAnalysis.scores?.map((score, index) => (
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.2 }}
+                      className="flex items-center justify-between p-2 bg-white/5 rounded border border-white/10"
+                    >
+                      <span className="text-gray-300 text-sm">{score}</span>
+                      <div className="flex items-center gap-2">
+                        <div className="w-20 bg-gray-700 rounded-full h-2">
+                          <div 
+                            className="bg-gradient-to-r from-blue-500 to-green-500 h-2 rounded-full"
+                            style={{ width: `${Math.floor(Math.random() * 40 + 60)}%` }}
+                          />
+                        </div>
+                        <span className="text-white text-sm font-medium">
+                          {Math.floor(Math.random() * 40 + 60)}%
+                        </span>
                       </div>
-                      <span className="text-white text-sm font-medium">
-                        {Math.floor(Math.random() * 40 + 60)}%
-                      </span>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </Terminal>
             </div>
 
             {/* 对话信息 */}

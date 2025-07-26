@@ -1691,9 +1691,9 @@ export default function A42zJudgeWorkflow() {
         // 更新评委评论
         const judgeAvatarMap: Record<string, string> = {
           'paul': "https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img//paul.png",
-          'andrew': "https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img//andrew.png",
+          'ng': "https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img//andrew.png",
           'sam': "https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img//sam.png",
-          'feifei': "https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img//feifei.png"
+          'li': "https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img//feifei.png"
         };
         
         const judgeNameMap: Record<string, string> = {
@@ -2124,21 +2124,21 @@ export default function A42zJudgeWorkflow() {
                     {/* 测试按钮 - 触发所有评委分析 */}
                     {files.some(f => f.type === "github" && f.status === "completed") && (
                       <div className="mt-4 pt-4 border-t border-white/20">
-                        <h4 className="text-white font-medium mb-3">测试所有评委分析</h4>
+                        <h4 className="text-white font-medium mb-3">Test all</h4>
                         <p className="text-zinc-400 text-sm mb-3">
-                          点击下面的按钮来测试所有评委的 Dify Chatflow API 调用
+                          Click the button below to test the Dify Chatflow API call for all judges
                         </p>
-                        <button
+                        <RainbowButton
                           onClick={() => {
                             const githubFile = files.find(f => f.type === "github");
                             if (githubFile && typeof githubFile.name === "string") {
                               triggerAllJudgeAnalyses(githubFile.name);
                             }
                           }}
-                          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
+                          className="text-sm font-medium"
                         >
-                          🧪 测试所有评委分析
-                        </button>
+                          🧪 Test All
+                        </RainbowButton>
                       </div>
                     )}
                   </motion.div>
