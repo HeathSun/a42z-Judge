@@ -22,7 +22,7 @@ interface DifyWebhookEvent {
   };
   timestamp: string;
   // 添加GitHub URL和用户信息
-  github_url?: string;
+  repo_url?: string;
   user_email?: string;
 }
 
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
       conversation_id: body.conversation_id,
       message_id: body.message_id,
       timestamp: body.timestamp,
-      github_url: body.github_url,
+      repo_url: body.repo_url,
       user_email: body.user_email
     });
 
@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
               .from('judge_comments')
               .insert({
                 conversation_id: body.conversation_id,
-                github_repo_url: body.github_url || '',
+                github_repo_url: body.repo_url || '',
                 gmail: body.user_email || '',
                 analysis_result: body.result.answer,
                 analysis_metadata: body.result.metadata,

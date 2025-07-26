@@ -32,7 +32,7 @@ SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 ```json
 {
   "inputs": {
-    "github_url": "https://github.com/user/repo"
+    "repo_url": "https://github.com/user/repo"
   },
   "query": "分析GitHub仓库的技术同质化程度：https://github.com/user/repo",
   "response_mode": "blocking",

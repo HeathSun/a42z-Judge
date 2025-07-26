@@ -1768,7 +1768,7 @@ export default function A42zJudgeWorkflow() {
           startTime,
           requestData: {
             message: `请从 ${judgeConfig.name} 的角度分析这个项目：${githubUrl}`,
-            inputs: { github_url: githubUrl },
+            inputs: { repo_url: githubUrl },
             apiKey: judgeConfig.apiKey
           }
         };
@@ -1875,7 +1875,7 @@ export default function A42zJudgeWorkflow() {
             startTime,
             requestData: {
               message: `请分析这个 GitHub 仓库的技术同质化程度：${file}`,
-              inputs: { github_url: file },
+              inputs: { repo_url: file },
               apiKey: judgeConfig?.apiKey || ''
             }
           };

@@ -70,7 +70,7 @@ export default function ApiTestPage() {
         } : {},
         body: method === 'POST' ? JSON.stringify({
           user_id: 'test_user_123',
-          github_url: 'https://github.com/test/repo',
+          repo_url: 'https://github.com/test/repo',
           workflow_result: `This is a test result from ${endpoint}`,
           analysis_type: 'test_analysis'
         }) : undefined

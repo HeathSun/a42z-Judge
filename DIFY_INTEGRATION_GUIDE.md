@@ -6,7 +6,7 @@
 
 ## 1. Dify Workflow 配置
 
-你已经在 Dify 后台（如 https://cloud.dify.ai/app/5ea00e48-8d67-4b22-922e-7d4a833a37ba/develop）配置好了 workflow，只需要前端传入 `github_url`。
+你已经在 Dify 后台（如 https://cloud.dify.ai/app/5ea00e48-8d67-4b22-922e-7d4a833a37ba/develop）配置好了 workflow，只需要前端传入 `repo_url`。
 
 - **Workflow 触发 API**:  
   `POST https://api.dify.ai/v1/workflows/trigger`
@@ -17,7 +17,7 @@
   ```json
   {
     "inputs": {
-      "github_url": "https://github.com/xxx/yyy"
+      "repo_url": "https://github.com/xxx/yyy"
     }
   }
   ```
@@ -41,7 +41,7 @@ class DifyAPI {
     this.apiKey = process.env.NEXT_PUBLIC_DIFY_API_KEY || '';
   }
 
-  // 只传 github_url，不需要 prompt
+  // 只传 repo_url，不需要 prompt
   async triggerWorkflowWithRepoUrl(repoUrl: string): Promise<any> {
     const response = await fetch(`${this.baseURL}/workflows/trigger`, {
       method: 'POST',
@@ -50,7 +50,7 @@ class DifyAPI {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        inputs: { github_url: repoUrl }
+        inputs: { repo_url: repoUrl }
       }),
     });
     if (!response.ok) {
@@ -76,7 +76,7 @@ const handleFileUpload = async (file: File | string, type: UploadedFile["type"])
   if (type === "github" && typeof file === "string") {
     try {
       setIsAnalyzingWithDify(true);
-      // 只传 github_url，不需要 prompt
+      // 只传 repo_url，不需要 prompt
       const result = await difyAPI.triggerWorkflowWithRepoUrl(file);
       setDifyAnalysis(result); // 这里 result.answer 就是分析结果
     } catch (error) {
@@ -127,7 +127,7 @@ NEXT_PUBLIC_DIFY_API_KEY=你的Dify密钥
 
 ## 5. 你不需要做的事
 
-- **不需要 prompt**，Dify workflow 里只要有 github_url 输入即可
+- **不需要 prompt**，Dify workflow 里只要有 repo_url 输入即可
 - **不需要 webhook**，直接用 blocking 模式拿结果
 - **不需要复杂的输入映射**，只要前端传 url
 

@@ -204,7 +204,7 @@ const response = await fetch('/api/analyze', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
-    github_url: 'https://github.com/user/project',
+    repo_url: 'https://github.com/user/project',
     user_email: 'user@example.com'
   })
 });

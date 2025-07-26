@@ -115,7 +115,7 @@ class DifyAPI {
   async analyzeTechnicalHomogeneity(githubUrl: string): Promise<DifyResponse> {
     return this.sendMessageToJudge('receive_data', 
       `请分析这个 GitHub 仓库的技术同质化程度：${githubUrl}`, 
-      { github_url: githubUrl }
+      { repo_url: githubUrl }
     );
   }
 
@@ -123,7 +123,7 @@ class DifyAPI {
   async analyzeBusinessPotential(githubUrl: string): Promise<DifyResponse> {
     return this.sendMessageToJudge('business', 
       `请分析这个项目的商业潜力：${githubUrl}`, 
-      { github_url: githubUrl }
+      { repo_url: githubUrl }
     );
   }
 
@@ -131,7 +131,7 @@ class DifyAPI {
   async getSamAnalysis(githubUrl: string): Promise<DifyResponse> {
     return this.sendMessageToJudge('sam', 
       `请从 Sam Altman 的角度分析这个项目：${githubUrl}`, 
-      { github_url: githubUrl }
+      { repo_url: githubUrl }
     );
   }
 
@@ -139,7 +139,7 @@ class DifyAPI {
   async getLiAnalysis(githubUrl: string): Promise<DifyResponse> {
     return this.sendMessageToJudge('li', 
       `请从 Feifei Li 的角度分析这个项目：${githubUrl}`, 
-      { github_url: githubUrl }
+      { repo_url: githubUrl }
     );
   }
 
@@ -147,7 +147,7 @@ class DifyAPI {
   async getNgAnalysis(githubUrl: string): Promise<DifyResponse> {
     return this.sendMessageToJudge('ng', 
       `请从 Andrew Ng 的角度分析这个项目：${githubUrl}`, 
-      { github_url: githubUrl }
+      { repo_url: githubUrl }
     );
   }
 
@@ -155,7 +155,7 @@ class DifyAPI {
   async getPaulAnalysis(githubUrl: string): Promise<DifyResponse> {
     return this.sendMessageToJudge('paul', 
       `请从 Paul Graham 的角度分析这个项目：${githubUrl}`, 
-      { github_url: githubUrl }
+      { repo_url: githubUrl }
     );
   }
 
@@ -163,7 +163,7 @@ class DifyAPI {
   async getSummaryAnalysis(githubUrl: string): Promise<DifyResponse> {
     return this.sendMessageToJudge('summary', 
       `请对这个项目进行综合分析总结：${githubUrl}`, 
-      { github_url: githubUrl }
+      { repo_url: githubUrl }
     );
   }
 

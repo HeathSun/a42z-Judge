@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase';
 interface DifyWorkflowData {
   user_id?: string;
   workflow_result?: string;
-  github_url?: string;
+  repo_url?: string;
   analysis_type?: string;
   metadata?: Record<string, unknown>;
   timestamp?: string;
@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
     console.log('📥 Dify Workflow Data Received:', {
       user_id: body.user_id,
       workflow_result: typeof body.workflow_result === 'string' ? body.workflow_result.substring(0, 100) + '...' : '',
-      github_url: body.github_url,
+      repo_url: body.repo_url,
       analysis_type: body.analysis_type,
       timestamp: body.timestamp || new Date().toISOString()
     });
@@ -44,13 +44,13 @@ export async function POST(request: NextRequest) {
     });
 
     // 存储到 Supabase 数据库（如果配置了的话）
-    if (body.github_url && body.workflow_result && typeof body.github_url === 'string' && typeof body.workflow_result === 'string') {
+    if (body.repo_url && body.workflow_result && typeof body.repo_url === 'string' && typeof body.workflow_result === 'string') {
       try {
         const { data, error } = await supabase
           .from('judge_comments')
           .insert({
             conversation_id: dataId,
-            github_repo_url: body.github_url,
+            github_repo_url: body.repo_url,
             gmail: typeof body.user_id === 'string' ? body.user_id : '',
             analysis_result: body.workflow_result,
             analysis_metadata: body.metadata,
@@ -127,7 +127,7 @@ export async function PUT() {
   const allData = Array.from(receivedData.entries()).map(([id, data]) => ({
     data_id: id,
     user_id: data.user_id,
-    github_url: data.github_url,
+    repo_url: data.repo_url,
     analysis_type: data.analysis_type,
     timestamp: data.timestamp,
     has_result: !!data.workflow_result

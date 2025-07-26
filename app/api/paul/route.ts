@@ -6,11 +6,11 @@ const receivedData = new Map<string, Record<string, unknown>>();
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { github_url, user_id } = body;
+    const { repo_url, user_id } = body;
 
     console.log('📥 Paul Analysis Request:', {
       user_id,
-      github_url,
+      repo_url,
       timestamp: new Date().toISOString()
     });
 
@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        inputs: { github_url },
+        inputs: { repo_url },
         user: user_id || 'anonymous'
       }),
     });
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
     // 存储到内存（用于调试）
     receivedData.set(dataId, {
       user_id,
-      github_url,
+      repo_url,
       result,
       source: 'paul_graham',
       timestamp: new Date().toISOString()
@@ -106,7 +106,7 @@ export async function PUT() {
   const allData = Array.from(receivedData.entries()).map(([id, data]) => ({
     data_id: id,
     user_id: data.user_id,
-    github_url: data.github_url,
+    repo_url: data.repo_url,
     source: data.source,
     timestamp: data.timestamp,
     has_result: !!data.result
