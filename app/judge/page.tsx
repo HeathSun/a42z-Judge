@@ -1590,21 +1590,31 @@ export default function A42zJudgeWorkflow() {
         return updatedFiles;
       });
 
-      // 上传github url时直接调用dify workflow
+      // 上传github url时调用Dify Chatflow API进行技术同质化分析
       if (type === "github" && typeof file === "string") {
         try {
           setIsAnalyzingWithDify(true);
-          const result = await difyAPI.triggerWorkflowWithRepoUrl(file);
-          setDifyAnalysis(result); // result.answer 就是分析结果
-          console.log('GitHub analysis completed:', result.answer);
+          console.log('开始技术同质化分析:', file);
+          
+          // 使用新的 Chatflow API 进行技术同质化分析
+          const result = await difyAPI.analyzeTechnicalHomogeneity(file);
+          setDifyAnalysis(result);
+          console.log('技术同质化分析完成:', result.answer);
+          
         } catch (error) {
-          console.error('Dify API Error:', error);
+          console.error('Dify Chatflow API Error:', error);
+          // 设置错误状态
+          setDifyAnalysis({
+            answer: `分析失败: ${error instanceof Error ? error.message : '未知错误'}`,
+            conversation_id: '',
+            message_id: ''
+          });
         } finally {
           setIsAnalyzingWithDify(false);
         }
       }
 
-      // 上传PDF文件到Supabase Storage并触发Dify分析
+      // 上传PDF文件到Supabase Storage
       if (type === "pdf" && typeof file === "object" && userEmail) {
         try {
           // 使用用户邮箱作为文件名
@@ -1627,17 +1637,8 @@ export default function A42zJudgeWorkflow() {
               .getPublicUrl(fileName);
             console.log('PDF public URL:', urlData.publicUrl);
             
-            // 触发PDF分析
-            try {
-              setIsAnalyzingWithDify(true);
-              const result = await difyAPI.triggerWorkflowWithPdf(urlData.publicUrl);
-              setDifyAnalysis(result); // result.answer 就是分析结果
-              console.log('PDF analysis completed:', result.answer);
-            } catch (error) {
-              console.error('PDF Dify API Error:', error);
-            } finally {
-              setIsAnalyzingWithDify(false);
-            }
+            // TODO: 这里可以添加PDF分析逻辑，调用相应的Dify Chatflow API
+            // 例如：await difyAPI.sendMessageToJudge('pdf_analyzer', '分析PDF内容', { pdf_url: urlData.publicUrl });
           }
         } catch (error) {
           console.error('PDF upload error:', error);
