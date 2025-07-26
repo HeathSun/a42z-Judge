@@ -81,7 +81,7 @@ class DifyAPI {
   }
 
   // 使用 Chatflow API 发送消息到指定的评委
-  async sendMessageToJudge(judgeType: string, message: string, inputs?: Record<string, any>): Promise<DifyResponse> {
+  async sendMessageToJudge(judgeType: string, message: string, inputs?: Record<string, unknown>): Promise<DifyResponse> {
     const judgeConfig = JUDGE_CONFIGS[judgeType];
     if (!judgeConfig) {
       throw new Error(`Unknown judge type: ${judgeType}`);
