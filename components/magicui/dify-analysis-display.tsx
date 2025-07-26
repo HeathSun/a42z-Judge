@@ -416,11 +416,11 @@ export function DifyAnalysisDisplay({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 <div>
                   <span className="text-gray-400">Conversation ID:</span>
-                  <span className="text-white font-mono ml-2">{analysisData.conversation_id}</span>
+                  <span className="text-white font-mono ml-2">{analysisData.conversation_id || 'N/A'}</span>
                 </div>
                 <div>
                   <span className="text-gray-400">Message ID:</span>
-                  <span className="text-white font-mono ml-2">{analysisData.message_id}</span>
+                  <span className="text-white font-mono ml-2">{analysisData.message_id || 'N/A'}</span>
                 </div>
               </div>
             </div>

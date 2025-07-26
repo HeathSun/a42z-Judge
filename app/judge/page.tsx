@@ -1297,7 +1297,7 @@ function DifyExecutionStatusCard({
               <div className="mb-2">
                 <span className="font-medium">输入参数:</span>
                 <pre className="mt-1 text-xs bg-white p-2 rounded border">
-                  {JSON.stringify(status.requestData.inputs, null, 2)}
+                  {status.requestData.inputs ? JSON.stringify(status.requestData.inputs, null, 2) : '{}'}
                 </pre>
               </div>
               <div>
@@ -1318,26 +1318,26 @@ function DifyExecutionStatusCard({
               <div className="mb-2">
                 <span className="font-medium">回答:</span>
                 <div className="mt-1 text-gray-600 max-h-32 overflow-y-auto">
-                  {status.responseData.answer}
+                  {status.responseData.answer || 'No answer provided'}
                 </div>
               </div>
               <div className="mb-2">
                 <span className="font-medium">对话ID:</span>
                 <span className="ml-2 text-gray-600 font-mono text-xs">
-                  {status.responseData.conversation_id}
+                  {status.responseData.conversation_id || 'N/A'}
                 </span>
               </div>
               <div className="mb-2">
                 <span className="font-medium">消息ID:</span>
                 <span className="ml-2 text-gray-600 font-mono text-xs">
-                  {status.responseData.message_id}
+                  {status.responseData.message_id || 'N/A'}
                 </span>
               </div>
               {status.responseData.metadata !== undefined && status.responseData.metadata !== null && (
                 <div>
                   <span className="font-medium">元数据:</span>
                   <pre className="mt-1 text-xs bg-white p-2 rounded border">
-                    {JSON.stringify(status.responseData.metadata as Record<string, unknown>, null, 2)}
+                    {JSON.stringify(status.responseData.metadata, null, 2)}
                   </pre>
                 </div>
               )}
@@ -2075,7 +2075,7 @@ export default function A42zJudgeWorkflow() {
                     {/* 测试按钮 - 触发所有评委分析 */}
                     {files.some(f => f.type === "github" && f.status === "completed") && (
                       <div className="mt-4 pt-4 border-t border-white/20">
-                        <h4 className="text-white font-medium mb-3">Iterate through all</h4>
+                    
                         <p className="text-zinc-400 text-sm mb-3">
                           Click the button below to test the API call for all judges
                         </p>
