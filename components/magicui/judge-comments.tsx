@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { MessageSquare, Star, Quote, CheckCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { InlineAnswerDisplay } from './answer-display';
+import Image from 'next/image';
 
 interface JudgeComment {
   id: string;
@@ -21,12 +22,7 @@ interface JudgeCommentsProps {
   className?: string;
 }
 
-const JUDGE_AVATARS = {
-  paul: "https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img//paul.png",
-  andrew: "https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img//andrew.png", 
-  sam: "https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img//sam.png",
-  feifei: "https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img//feifei.png"
-};
+
 
 // 过滤特殊符号的函数
 const filterSpecialSymbols = (text: string): string => {
@@ -93,18 +89,24 @@ export function JudgeComments({
               <div className="flex items-start gap-4 mb-4">
                 {/* 头像 */}
                 <div className="relative">
-                  <img
+                  <Image
                     src={comment.avatar}
                     alt={`${comment.name} avatar`}
-                    className="w-12 h-12 rounded-full border-2 border-white/20 shadow-lg"
-                    onError={(e) => {
+                    width={48}
+                    height={48}
+                    className="w-12 h-12 rounded-full border-2 border-white/20 shadow-lg object-cover"
+                    onError={() => {
                       // 头像加载失败时的备用方案
-                      const target = e.target as HTMLImageElement;
-                      target.style.display = 'none';
-                      target.nextElementSibling?.classList.remove('hidden');
+                      const fallbackElement = document.querySelector(`[data-avatar-fallback="${comment.id}"]`) as HTMLElement;
+                      if (fallbackElement) {
+                        fallbackElement.classList.remove('hidden');
+                      }
                     }}
                   />
-                  <div className="hidden w-12 h-12 rounded-full border-2 border-white/20 shadow-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-bold text-lg">
+                  <div 
+                    data-avatar-fallback={comment.id}
+                    className="hidden w-12 h-12 rounded-full border-2 border-white/20 shadow-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-bold text-lg absolute top-0 left-0"
+                  >
                     {comment.name.charAt(0)}
                   </div>
                   
@@ -205,10 +207,12 @@ export function SingleJudgeComment({
   return (
     <div className={cn("bg-black/40 backdrop-blur-sm border border-white/20 rounded-lg p-4", className)}>
       <div className="flex items-center gap-3 mb-3">
-        <img
+        <Image
           src={avatar}
           alt={`${name} avatar`}
-          className="w-10 h-10 rounded-full border border-white/20"
+          width={40}
+          height={40}
+          className="w-10 h-10 rounded-full border border-white/20 object-cover"
         />
         <div>
           <h4 className="text-white font-medium">{name}</h4>
