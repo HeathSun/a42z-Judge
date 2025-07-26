@@ -51,7 +51,7 @@ class DifyAPI {
   }
 
   // 通用 Workflow 触发方法
-  private async triggerWorkflow(workflowType: WorkflowType, inputs: Record<string, any>): Promise<DifyResponse> {
+  private async triggerWorkflow(workflowType: WorkflowType, inputs: Record<string, unknown>): Promise<DifyResponse> {
     const workflowId = WORKFLOW_IDS[workflowType];
     const response = await fetch(`${this.baseURL}/workflows/${workflowId}/run`, {
       method: 'POST',
