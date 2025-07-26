@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from "react"
 
 import { motion, AnimatePresence } from "framer-motion"
-import { ChevronRight, Upload, Github, FileText, X, Plus, ExternalLink, Loader2 } from "lucide-react"
+import { ChevronRight, Github, FileText, Plus, ExternalLink, Loader2 } from "lucide-react"
 import { ShimmerButton } from "@/components/magicui/shimmer-button";
 import { ShinyButton } from "@/components/magicui/shiny-button";
 import { FlickeringGrid } from "@/components/magicui/flickering-grid";
@@ -15,13 +15,9 @@ import { supabase } from '@/lib/supabase';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { User2 } from 'lucide-react';
 import { ShineBorder } from '@/components/magicui/shine-border';
+import { TextAnimate } from '@/components/magicui/text-animate';
 
 // Types
-interface KeywordTab {
-  id: string
-  label: string
-  isCustom?: boolean
-}
 
 // Utility function to check if running on localhost
 const isLocalhost = (): boolean => {
@@ -68,15 +64,7 @@ interface AITwin {
   message?: string
 }
 
-// Mock data
-const initialKeywords: KeywordTab[] = [
-  { id: "1", label: "AI/ML" },
-  { id: "2", label: "Healthcare" },
-  { id: "3", label: "Mobile App" },
-  { id: "4", label: "Real-time" },
-  { id: "5", label: "Computer Vision" },
-  { id: "6", label: "Social Impact" },
-]
+
 
 const aiTwins: AITwin[] = [
   { id: "pg", name: "Paul Graham", avatar: "🧠", role: "Startup Advisor", thinking: false },
@@ -229,66 +217,210 @@ function WorkflowCard({ step, onToggle }: { step: WorkflowStep; onToggle: (id: s
 }
 
 // Keyword Tab Component
-function KeywordTabs({
-  keywords,
-  onRemove,
-  onAdd,
+function ProjectDescription({
+  description,
+  onDescriptionChange,
 }: {
-  keywords: KeywordTab[]
-  onRemove: (id: string) => void
-  onAdd: (label: string) => void
+  description: string
+  onDescriptionChange: (description: string) => void
 }) {
-  const [newKeyword, setNewKeyword] = useState("")
-  const [isAdding, setIsAdding] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
+  const [tempDescription, setTempDescription] = useState(description)
 
-  const handleAdd = () => {
-    if (newKeyword.trim()) {
-      onAdd(newKeyword.trim())
-      setNewKeyword("")
-      setIsAdding(false)
+  // 从localStorage加载保存的描述，或者使用传入的description
+  useEffect(() => {
+    const savedDescription = localStorage.getItem('a42z-project-description')
+    if (savedDescription && !description) {
+      onDescriptionChange(savedDescription)
+      setTempDescription(savedDescription)
+    } else if (description && !savedDescription) {
+      // 如果传入的description不为空，但localStorage中没有，则保存到localStorage
+      localStorage.setItem('a42z-project-description', description)
+      setTempDescription(description)
+    } else if (description) {
+      // 如果传入的description不为空，直接使用
+      setTempDescription(description)
+    }
+  }, [description, onDescriptionChange])
+
+  // 保存描述到localStorage
+  useEffect(() => {
+    if (description) {
+      localStorage.setItem('a42z-project-description', description)
+    }
+  }, [description])
+
+  const handleSave = () => {
+    if (tempDescription.trim()) {
+      onDescriptionChange(tempDescription.trim())
+      setIsEditing(false)
     }
   }
 
-  return (
-    <div className="flex flex-wrap gap-2">
-      {keywords.map((keyword) => (
-        <motion.div
-          key={keyword.id}
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.8 }}
-          className="flex items-center gap-1 px-3 py-1 bg-zinc-800/50 hover:bg-zinc-700/50 rounded-full text-sm text-zinc-300 border border-white/20 transition-colors group"
-        >
-          <span>{keyword.label}</span>
-          <button onClick={() => onRemove(keyword.id)} className="opacity-0 group-hover:opacity-100 transition-opacity">
-            <X className="w-3 h-3 hover:text-red-400" />
-          </button>
-        </motion.div>
-      ))}
+  const handleCancel = () => {
+    setTempDescription(description)
+    setIsEditing(false)
+  }
 
-      {isAdding ? (
-        <div className="flex items-center gap-1">
-          <input
-            type="text"
-            value={newKeyword}
-            onChange={(e) => setNewKeyword(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleAdd()}
-            onBlur={handleAdd}
-            placeholder="New keyword"
-            className="px-2 py-1 bg-zinc-900/50 text-zinc-300 rounded text-sm border border-white/20 focus:outline-none focus:ring-1 focus:ring-white-400 w-24"
+  return (
+    <div className="space-y-4">
+      {isEditing ? (
+        <div className="space-y-3">
+          <textarea
+            value={tempDescription}
+            onChange={(e) => setTempDescription(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && e.metaKey) {
+                handleSave()
+              } else if (e.key === "Escape") {
+                handleCancel()
+              }
+            }}
+            placeholder="Describe your project in detail..."
+            className="w-full px-4 py-3 bg-zinc-900/50 text-white rounded-lg border border-white/20 focus:outline-none focus:ring-2 focus:ring-white-50 placeholder-zinc-500 resize-none"
+            rows={4}
             autoFocus
           />
+          <div className="flex gap-2">
+            <ShimmerButton
+              borderRadius="0.25rem"
+              onClick={handleSave}
+              className="px-4 py-2 bg-green-600/20 hover:bg-green-600/30 text-green-400 border border-green-500/30"
+            >
+              Save
+            </ShimmerButton>
+            <ShimmerButton
+              borderRadius="0.25rem"
+              onClick={handleCancel}
+              className="px-4 py-2 bg-zinc-600/20 hover:bg-zinc-600/30 text-zinc-400 border border-zinc-500/30"
+            >
+              Cancel
+            </ShimmerButton>
+          </div>
         </div>
       ) : (
-        <ShimmerButton
-          borderRadius="0.25rem"
-          onClick={() => setIsAdding(true)}
-          className="flex items-center gap-1 px-3 py-1 bg-zinc-800/30 hover:bg-zinc-700/50 rounded-full text-sm text-zinc-400 border border-white/10 border-dashed transition-colors"
-        >
-          <Plus className="w-3 h-3" />
-          Add
-        </ShimmerButton>
+        <div className="space-y-3">
+          {description ? (
+            <div className="relative group">
+              <TextAnimate
+                animation="blurIn"
+                className="text-lg text-white leading-relaxed"
+                by="word"
+              >
+                {description}
+              </TextAnimate>
+              <button
+                onClick={() => setIsEditing(true)}
+                className="absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity p-2 hover:bg-white/10 rounded"
+              >
+                <FileText className="w-4 h-4 text-zinc-400" />
+              </button>
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <TextAnimate
+                animation="fadeIn"
+                className="text-zinc-400 mb-4"
+                by="word"
+              >
+                No project description yet
+              </TextAnimate>
+              <ShimmerButton
+                borderRadius="0.25rem"
+                onClick={() => setIsEditing(true)}
+                className="px-6 py-3 bg-zinc-800/30 hover:bg-zinc-700/50 text-zinc-300 border border-white/10 border-dashed"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add Project Description
+              </ShimmerButton>
+            </div>
+          )}
+        </div>
       )}
+    </div>
+  )
+}
+
+// GitHub Link Modal Component
+function GitHubLinkModal({
+  isOpen,
+  onClose,
+  onSave,
+}: {
+  isOpen: boolean
+  onClose: () => void
+  onSave: (link: string) => void
+}) {
+  const [githubLink, setGithubLink] = useState("")
+
+  const handleSave = () => {
+    if (githubLink.trim()) {
+      onSave(githubLink.trim())
+      setGithubLink("")
+      onClose()
+    }
+  }
+
+  const handleCancel = () => {
+    setGithubLink("")
+    onClose()
+  }
+
+  if (!isOpen) return null
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+      <div
+        className="rounded-2xl bg-black/80 shadow-2xl border border-white/10 px-8 py-6 max-w-md w-full mx-4"
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="flex items-center gap-3 mb-4">
+          <Github className="w-6 h-6 text-zinc-400" />
+          <h3 className="text-xl font-bold text-white">GitHub Repository Link</h3>
+        </div>
+        
+        <div className="space-y-4">
+          <div>
+            <label htmlFor="github-link" className="block text-sm font-medium text-zinc-300 mb-2">
+              Repository URL
+            </label>
+            <input
+              id="github-link"
+              type="url"
+              value={githubLink}
+              onChange={(e) => setGithubLink(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleSave()
+                } else if (e.key === "Escape") {
+                  handleCancel()
+                }
+              }}
+              placeholder="https://github.com/username/repository"
+              className="w-full px-4 py-3 bg-zinc-900/50 text-white rounded-lg border border-white/20 focus:outline-none focus:ring-2 focus:ring-white-50 placeholder-zinc-500"
+              autoFocus
+            />
+          </div>
+          
+          <div className="flex gap-3">
+            <ShimmerButton
+              borderRadius="0.25rem"
+              onClick={handleSave}
+              disabled={!githubLink.trim()}
+              className="flex-1 px-4 py-2 bg-green-600/20 hover:bg-green-600/30 disabled:bg-zinc-700/20 disabled:cursor-not-allowed text-green-400 border border-green-500/30"
+            >
+              Save
+            </ShimmerButton>
+            <ShimmerButton
+              borderRadius="0.25rem"
+              onClick={handleCancel}
+              className="flex-1 px-4 py-2 bg-zinc-600/20 hover:bg-zinc-600/30 text-zinc-400 border border-zinc-500/30"
+            >
+              Cancel
+            </ShimmerButton>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
@@ -299,20 +431,24 @@ function FileUploadSection({
   onFileUpload,
 }: {
   files: UploadedFile[]
-  onFileUpload: (file: File, type: UploadedFile["type"]) => void
+  onFileUpload: (file: File | string, type: UploadedFile["type"]) => void
 }) {
+  const [showGitHubModal, setShowGitHubModal] = useState(false)
   const fileInputRefs = {
     pdf: useRef<HTMLInputElement>(null),
-    github: useRef<HTMLInputElement>(null),
   }
 
   const uploadTypes = [
     { type: "pdf" as const, label: "Pitch Deck PDF", icon: FileText, required: true },
-    { type: "github" as const, label: "GitHub Repo", icon: Github, required: false },
+    { type: "github" as const, label: "GitHub Repo", icon: Github, required: true },
   ]
 
   const handleFileSelect = (type: UploadedFile["type"]) => {
-    fileInputRefs[type].current?.click()
+    if (type === "github") {
+      setShowGitHubModal(true)
+    } else {
+      fileInputRefs[type].current?.click()
+    }
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: UploadedFile["type"]) => {
@@ -322,51 +458,66 @@ function FileUploadSection({
     }
   }
 
+  const handleGitHubLinkSave = (link: string) => {
+    // 直接传递GitHub链接字符串
+    onFileUpload(link, "github")
+  }
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      {uploadTypes.map(({ type, label, icon: Icon, required }) => {
-        const uploadedFile = files.find((f) => f.type === type)
+    <>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {uploadTypes.map(({ type, label, icon: Icon, required }) => {
+          const uploadedFile = files.find((f) => f.type === type)
 
-        return (
-          <div key={type} className="relative">
-            <input
-              ref={fileInputRefs[type]}
-              type="file"
-              onChange={(e) => handleFileChange(e, type)}
-              className="hidden"
-              accept={type === "pdf" ? ".pdf" : type === "github" ? "*" : "*"}
-            />
+          return (
+            <div key={type} className="relative">
+              {type === "pdf" && (
+                <input
+                  ref={fileInputRefs[type]}
+                  type="file"
+                  onChange={(e) => handleFileChange(e, type)}
+                  className="hidden"
+                  accept=".pdf"
+                />
+              )}
 
-            <ShimmerButton
-              borderRadius="0.25rem"
-              onClick={() => handleFileSelect(type)}
-              className={`w-full p-4 rounded-lg border-2 border-dashed transition-all ${
-                uploadedFile
-                  ? "border-green-400/50 bg-green-400/10"
-                  : "border-white/20 hover:border-white/40 bg-zinc-800/30 hover:bg-zinc-700/30"
-              }`}
-            >
-              <div className="flex flex-col items-center gap-2">
-                <Icon className={`w-6 h-6 ${uploadedFile ? "text-green-400" : "text-zinc-400"}`} />
-                <div className="text-center">
-                  <div className={`font-medium ${uploadedFile ? "text-green-300" : "text-zinc-300"}`}>
-                    {uploadedFile ? uploadedFile.name : label}
-                    {required && <span className="text-red-400 ml-1">*</span>}
-                  </div>
-                  {uploadedFile && (
-                    <div className="text-xs text-zinc-400 mt-1">
-                      {uploadedFile.status === "uploading" && "Uploading..."}
-                      {uploadedFile.status === "completed" && "Uploaded successfully"}
-                      {uploadedFile.status === "error" && "Upload failed"}
+              <ShimmerButton
+                borderRadius="0.25rem"
+                onClick={() => handleFileSelect(type)}
+                className={`w-full p-4 rounded-lg border-2 border-dashed transition-all min-w-0 ${
+                  uploadedFile
+                    ? "border-green-400/50 bg-green-400/10"
+                    : "border-white/20 hover:border-white/40 bg-zinc-800/30 hover:bg-zinc-700/30"
+                }`}
+              >
+                <div className="flex flex-col items-center gap-2 w-full min-w-0">
+                  <Icon className={`w-6 h-6 ${uploadedFile ? "text-green-400" : "text-zinc-400"}`} />
+                  <div className="text-center w-full">
+                    <div className={`font-medium ${uploadedFile ? "text-green-300" : "text-zinc-300"} max-w-full truncate`}>
+                      {uploadedFile ? uploadedFile.name : label}
+                      {required && <span className="text-red-400 ml-1">*</span>}
                     </div>
-                  )}
+                    {uploadedFile && (
+                      <div className="text-xs text-zinc-400 mt-1 max-w-full truncate">
+                        {uploadedFile.status === "uploading" && "Uploading..."}
+                        {uploadedFile.status === "completed" && "Uploaded successfully"}
+                        {uploadedFile.status === "error" && "Upload failed"}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </ShimmerButton>
-          </div>
-        )
-      })}
-    </div>
+              </ShimmerButton>
+            </div>
+          )
+        })}
+      </div>
+
+      <GitHubLinkModal
+        isOpen={showGitHubModal}
+        onClose={() => setShowGitHubModal(false)}
+        onSave={handleGitHubLinkSave}
+      />
+    </>
   )
 }
 
@@ -413,7 +564,6 @@ function AITwinsDebate({ twins, debateRound }: { twins: AITwin[]; debateRound: n
 // Main Component
 export default function A42zJudgeWorkflow() {
   const [projectDescription, setProjectDescription] = useState("")
-  const [keywords, setKeywords] = useState<KeywordTab[]>([])
   const [files, setFiles] = useState<UploadedFile[]>([])
   const [workflowSteps, setWorkflowSteps] = useState<WorkflowStep[]>([])
   const [currentStep, setCurrentStep] = useState(0)
@@ -509,8 +659,8 @@ export default function A42zJudgeWorkflow() {
     const steps: WorkflowStep[] = [
       {
         id: "keywords",
-        title: "Keyword Analysis",
-        description: "AI-generated project keywords based on your description",
+        title: "Project Description Analysis",
+        description: "Analyzing your detailed project description",
         status: "pending",
         isExpanded: false,
       },
@@ -582,14 +732,13 @@ export default function A42zJudgeWorkflow() {
 
     setIsStarted(true)
 
-    // Step 1: Generate keywords
+    // Step 1: Project Description Analysis
     setWorkflowSteps((prev) =>
       prev.map((step) => (step.id === "keywords" ? { ...step, status: "loading", isExpanded: true } : step)),
     )
 
-    // Simulate AI keyword generation
+    // Simulate project description analysis
     setTimeout(() => {
-      setKeywords(initialKeywords)
       setWorkflowSteps((prev) =>
         prev.map((step) =>
           step.id === "keywords"
@@ -597,7 +746,7 @@ export default function A42zJudgeWorkflow() {
                 ...step,
                 status: "completed",
                 content:
-                  "Generated 6 relevant keywords based on your project description. You can edit these keywords to better match your project focus.",
+                  "Project description analyzed successfully. Your detailed description will be used for comprehensive evaluation.",
               }
             : step,
         ),
@@ -606,10 +755,10 @@ export default function A42zJudgeWorkflow() {
     }, 2000)
   }
 
-  const handleFileUpload = (file: File, type: UploadedFile["type"]) => {
+  const handleFileUpload = (file: File | string, type: UploadedFile["type"]) => {
     const newFile: UploadedFile = {
       id: Date.now().toString(),
-      name: file.name,
+      name: typeof file === "string" ? file : file.name,
       type,
       status: "uploading",
     }
@@ -628,18 +777,7 @@ export default function A42zJudgeWorkflow() {
     )
   }
 
-  const handleKeywordRemove = (id: string) => {
-    setKeywords((prev) => prev.filter((k) => k.id !== id))
-  }
 
-  const handleKeywordAdd = (label: string) => {
-    const newKeyword: KeywordTab = {
-      id: Date.now().toString(),
-      label,
-      isCustom: true,
-    }
-    setKeywords((prev) => [...prev, newKeyword])
-  }
 
   const continueWorkflow = () => {
     if (currentStep < workflowSteps.length - 1) {
@@ -816,17 +954,18 @@ export default function A42zJudgeWorkflow() {
             {/* Workflow Steps */}
             {isStarted && (
               <div className="space-y-4">
-                {/* Keywords Section */}
-                {keywords.length > 0 && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="backdrop-blur-md rounded-lg p-6 border border-white/20 shadow-lg bg-[rgba(24,24,27,0.7)]"
-                  >
-                    <h3 className="text-white font-medium mb-4">Project Keywords</h3>
-                    <KeywordTabs keywords={keywords} onRemove={handleKeywordRemove} onAdd={handleKeywordAdd} />
-                  </motion.div>
-                )}
+                {/* Project Description Section */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="backdrop-blur-md rounded-lg p-6 border border-white/20 shadow-lg bg-[rgba(24,24,27,0.7)]"
+                >
+                  <h3 className="text-white font-medium mb-4">Project Description</h3>
+                  <ProjectDescription 
+                    description={projectDescription} 
+                    onDescriptionChange={setProjectDescription} 
+                  />
+                </motion.div>
 
                 {/* File Upload Section */}
                 {currentStep >= 1 && (
@@ -837,7 +976,7 @@ export default function A42zJudgeWorkflow() {
                   >
                     <h3 className="text-white font-medium mb-4">Upload Documents</h3>
                     <FileUploadSection files={files} onFileUpload={handleFileUpload} />
-                    {files.some((f) => f.status === "completed") && (
+                    {files.filter((f) => f.status === "completed").length === 2 && (
                       <div className="mt-4 flex justify-end">
                         <ShimmerButton
                           borderRadius="0.25rem"
