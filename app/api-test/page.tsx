@@ -59,7 +59,6 @@ const apiEndpoints: ApiEndpoint[] = [
 export default function ApiTestPage() {
   const [testResults, setTestResults] = useState<Record<string, ApiTestResult>>({});
   const [loading, setLoading] = useState<Record<string, boolean>>({});
-  const [selectedEndpoint, setSelectedEndpoint] = useState<string>('');
 
   const testApiEndpoint = async (endpoint: string, method: 'GET' | 'POST' | 'PUT') => {
     setLoading(prev => ({ ...prev, [endpoint]: true }));
