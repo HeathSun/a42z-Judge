@@ -77,7 +77,7 @@ export function ApiCallItem({
           <div className="flex items-center gap-2">
             {/* Token消耗显示 */}
             <span className="text-xs text-zinc-400 font-mono">
-              {(tokenCost / 1000).toFixed(3)}K
+              {typeof tokenCost === 'number' ? (tokenCost / 1000).toFixed(3) : '0.000'}K
             </span>
             
             {/* 充能条 */}

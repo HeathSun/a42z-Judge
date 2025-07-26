@@ -252,7 +252,7 @@ export function DifyAnalysisDisplay({
                 )}
                 {call.latency && (
                   <div className="text-green-400">
-                    {call.latency.toFixed(0)}ms
+                    {typeof call.latency === 'number' ? call.latency.toFixed(0) : '0'}ms
                   </div>
                 )}
                 <div className="text-gray-500">
@@ -289,13 +289,13 @@ export function DifyAnalysisDisplay({
               <div className="bg-white/5 p-3 rounded-lg border border-white/10">
                 <div className="text-gray-400 text-sm">Cost</div>
                 <div className="text-white font-semibold">
-                  ${analysisData.metadata.usage.total_price?.toFixed(4)}
+                  ${typeof analysisData.metadata.usage.total_price === 'number' ? analysisData.metadata.usage.total_price.toFixed(4) : '0.0000'}
                 </div>
               </div>
               <div className="bg-white/5 p-3 rounded-lg border border-white/10">
                 <div className="text-gray-400 text-sm">Latency</div>
                 <div className="text-white font-semibold">
-                  {analysisData.metadata.usage.latency?.toFixed(0)}ms
+                  {typeof analysisData.metadata.usage.latency === 'number' ? analysisData.metadata.usage.latency.toFixed(0) : '0'}ms
                 </div>
               </div>
               <div className="bg-white/5 p-3 rounded-lg border border-white/10">

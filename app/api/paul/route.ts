@@ -26,6 +26,35 @@ export async function POST(request: NextRequest) {
     // 生成唯一ID
     const requestId = `paul_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     
+    // 模拟 Paul Graham 的分析结果
+    const analysisResult = {
+      agent_name: 'Paul Graham',
+      analysis_type: 'paul_graham_perspective',
+      scores: {
+        innovation_score: Math.floor(Math.random() * 40 + 60), // 60-100
+        market_potential: Math.floor(Math.random() * 40 + 60),
+        technical_quality: Math.floor(Math.random() * 40 + 60),
+        business_model: Math.floor(Math.random() * 40 + 60)
+      },
+      insights: [
+        "This project shows potential for solving real problems.",
+        "The technical approach is sound but could be more innovative.",
+        "Market timing appears favorable for this type of solution.",
+        "The team's execution capability is a key factor to consider."
+      ],
+      recommendations: [
+        "Focus on user acquisition and retention metrics",
+        "Consider pivoting towards a more specific niche",
+        "Build strong technical moats to prevent competition",
+        "Prioritize revenue generation over feature development"
+      ],
+      risk_factors: [
+        "Market saturation in this space",
+        "Dependency on third-party APIs",
+        "Scalability challenges with current architecture"
+      ]
+    };
+    
     // 存储数据
     const data = {
       id: requestId,
@@ -33,7 +62,13 @@ export async function POST(request: NextRequest) {
       repo_url: body.repo_url,
       user_id: body.user_id || 'anonymous',
       analysis_type: 'paul_graham_perspective',
-      status: 'received'
+      status: 'completed',
+      result: analysisResult,
+      metadata: {
+        processing_time: Math.floor(Math.random() * 2000 + 1000), // 1-3 seconds
+        tokens_used: Math.floor(Math.random() * 5000 + 2000), // 2000-7000 tokens
+        cost: parseFloat((Math.random() * 0.1 + 0.05).toFixed(4)) // $0.05-$0.15
+      }
     };
     
     receivedData.set(requestId, data);
@@ -41,12 +76,14 @@ export async function POST(request: NextRequest) {
     // 返回成功响应
     return NextResponse.json({
       success: true,
-      message: 'Paul analysis request received successfully',
+      message: 'Paul analysis completed successfully',
       request_id: requestId,
       data: {
         repo_url: body.repo_url,
         analysis_type: 'paul_graham_perspective',
-        status: 'processing'
+        status: 'completed',
+        agent_output: analysisResult,
+        metadata: data.metadata
       }
     });
 

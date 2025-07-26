@@ -52,7 +52,7 @@ const JUDGE_CONFIGS: Record<string, JudgeConfig> = {
   },
   paul: {
     name: 'Paul Graham',
-    apiKey: 'app-1wc2KINOnhqxQYmDsIGgMXR',
+    apiKey: 'app-1wc2KIN2OnhqxQYmDsIGgMXR',
     description: 'Paul Graham 视角分析'
   }
 };

@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from "react"
 
 import { motion, AnimatePresence } from "framer-motion"
-import { ChevronRight, Github, FileText, Plus, ExternalLink, Loader2, Search, Brain, Database, Cpu, Code, Zap, Globe, TrendingUp, BarChart3, Shield, GitBranch, Webhook, Bot, Sparkles, Award, Building2, Activity } from "lucide-react"
+import { ChevronRight, Github, FileText, Plus, ExternalLink, Loader2, Search, Brain, Database, Cpu, Code, Zap, Globe, TrendingUp, BarChart3, Shield, GitBranch, Webhook, Bot, Sparkles, Award, Building2, Activity, Linkedin, Eye, Thermometer } from "lucide-react"
 import { ShimmerButton } from "@/components/magicui/shimmer-button";
 import { FlickeringGrid } from "@/components/magicui/flickering-grid";
 import { RainbowButton } from "@/components/magicui/rainbow-button";
@@ -143,7 +143,7 @@ function TerminalSteps({ steps, isVisible, stepType = "business-research" }: { s
       return Math.floor(baseDelay * variation);
     };
 
-          // 基础API调用池
+                // 扩展的API调用池
       const apiCallPool: ApiCall[] = [
         // 搜索引擎和搜索API
         {
@@ -161,6 +161,22 @@ function TerminalSteps({ steps, isVisible, stepType = "business-research" }: { s
           description: "Real-time web search and analysis",
           duration: generateRandomTime(),
           delay: generateRandomDelay(1800),
+        },
+        {
+          id: "bing-search",
+          icon: Search,
+          title: "Bing Search API",
+          description: "Alternative search engine analysis",
+          duration: generateRandomTime(),
+          delay: generateRandomDelay(1600),
+        },
+        {
+          id: "duckduckgo",
+          icon: Search,
+          title: "DuckDuckGo API",
+          description: "Privacy-focused search results",
+          duration: generateRandomTime(),
+          delay: generateRandomDelay(1400),
         },
         
         // 数据库和存储
@@ -188,45 +204,85 @@ function TerminalSteps({ steps, isVisible, stepType = "business-research" }: { s
           duration: generateRandomTime(),
           delay: generateRandomDelay(2200),
         },
+        {
+          id: "pitchbook",
+          icon: Building2,
+          title: "PitchBook API",
+          description: "Private market intelligence",
+          duration: generateRandomTime(),
+          delay: generateRandomDelay(2100),
+        },
+        {
+          id: "linkedin",
+          icon: Linkedin,
+          title: "LinkedIn API",
+          description: "Professional network analysis",
+          duration: generateRandomTime(),
+          delay: generateRandomDelay(1900),
+        },
       
-      // 代码分析工具
-      {
-        id: "github-api",
-        icon: Github,
-        title: "GitHub API",
-        description: "Repository analysis and metrics",
-        duration: generateRandomTime(),
-        delay: generateRandomDelay(1600),
-      },
-      {
-        id: "repointel",
-        icon: GitBranch,
-        title: "RepoIntel API",
-        description: "Advanced repository intelligence",
-        duration: generateRandomTime(),
-        delay: generateRandomDelay(2200),
-      },
-      {
-        id: "sonarqube",
-        icon: Code,
-        title: "SonarQube API",
-        description: "Code quality and security analysis",
-        duration: generateRandomTime(),
-        delay: generateRandomDelay(1900),
-      },
-      
-      // 新闻和媒体
-      {
-        id: "techcrunch",
-        icon: TrendingUp,
-        title: "TechCrunch API",
-        description: "Tech news and startup coverage",
-        duration: generateRandomTime(),
-        delay: generateRandomDelay(1700),
-      },
-      {
-        id: "devpost",
-        icon: Award,
+        // 代码分析工具
+        {
+          id: "github-api",
+          icon: Github,
+          title: "GitHub API",
+          description: "Repository analysis and metrics",
+          duration: generateRandomTime(),
+          delay: generateRandomDelay(1600),
+        },
+        {
+          id: "repointel",
+          icon: GitBranch,
+          title: "RepoIntel API",
+          description: "Advanced repository intelligence",
+          duration: generateRandomTime(),
+          delay: generateRandomDelay(2200),
+        },
+        {
+          id: "sonarqube",
+          icon: Code,
+          title: "SonarQube API",
+          description: "Code quality and security analysis",
+          duration: generateRandomTime(),
+          delay: generateRandomDelay(1900),
+        },
+        {
+          id: "snyk",
+          icon: Shield,
+          title: "Snyk API",
+          description: "Security vulnerability scanning",
+          duration: generateRandomTime(),
+          delay: generateRandomDelay(1800),
+        },
+        {
+          id: "lgtm",
+          icon: Eye,
+          title: "LGTM API",
+          description: "Code review and analysis",
+          duration: generateRandomTime(),
+          delay: generateRandomDelay(1700),
+        },
+        {
+          id: "codeclimate",
+          icon: Thermometer,
+          title: "CodeClimate API",
+          description: "Code quality metrics",
+          duration: generateRandomTime(),
+          delay: generateRandomDelay(1600),
+        },
+        
+        // 新闻和媒体
+        {
+          id: "techcrunch",
+          icon: TrendingUp,
+          title: "TechCrunch API",
+          description: "Tech news and startup coverage",
+          duration: generateRandomTime(),
+          delay: generateRandomDelay(1700),
+        },
+        {
+          id: "devpost",
+          icon: Award,
         title: "DevPost API",
         description: "Hackathon project analysis",
         duration: generateRandomTime(),
@@ -577,7 +633,7 @@ function TerminalSteps({ steps, isVisible, stepType = "business-research" }: { s
                 title={apiCall.title} 
                 description={apiCall.description}
                 status={hasCompleted ? "completed" : "loading"}
-                duration={`${apiCall.duration.toFixed(2)}`}
+                duration={`${typeof apiCall.duration === 'number' ? apiCall.duration.toFixed(2) : '0.00'}`}
                 tokenCost={apiCall.tokenCost}
               />
             </motion.div>
