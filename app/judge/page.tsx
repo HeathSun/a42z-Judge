@@ -23,6 +23,17 @@ interface KeywordTab {
   isCustom?: boolean
 }
 
+// Utility function to check if running on localhost
+const isLocalhost = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  const hostname = window.location.hostname;
+  return hostname === 'localhost' || 
+         hostname === '127.0.0.1' ||
+         hostname.startsWith('192.168.') ||
+         hostname.startsWith('10.') ||
+         hostname.startsWith('172.');
+};
+
 interface UploadedFile {
   id: string
   name: string
@@ -456,6 +467,16 @@ export default function A42zJudgeWorkflow() {
   }, []);
 
   useEffect(() => {
+    // 检查是否为localhost环境
+    if (isLocalhost()) {
+      // 在localhost环境下自动设置为已登录状态
+      setIsLoggedIn(true);
+      setShowLogin(false);
+      setLoginFading(false);
+      setUserEmail('localhost@a42z.dev');
+      return;
+    }
+
     const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
       if (session && session.user) {
         setIsLoggedIn(true);
@@ -553,7 +574,7 @@ export default function A42zJudgeWorkflow() {
   }, [])
 
   const handleStart = async () => {
-    if (!isLoggedIn) {
+    if (!isLoggedIn && !isLocalhost()) {
       setShowLogin(true);
       return;
     }

@@ -44,7 +44,24 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 ### 2. **删除 app 目录下的 favicon 相关文件**
 
-- 检查 `app/` 目录下是否有 `favicon.ico`、`favicon.png`、`icon.png`、`icon.tsx` 等文件，如果有，全部删除，只保留 `public/favicon.ico`。
+## 开发环境登录跳过功能
+
+在本地开发环境中，系统会自动跳过登录验证，方便开发和测试：
+
+### 支持的环境
+- `localhost`
+- `127.0.0.1`
+- 局域网IP地址（`192.168.*`、`10.*`、`172.*`）
+
+### 功能说明
+- 在支持的本地环境中，用户无需登录即可使用所有功能
+- 系统会自动设置用户邮箱为 `localhost@a42z.dev`
+- 在生产环境中，仍然需要正常的登录流程
+
+### 技术实现
+- 通过 `isLocalhost()` 工具函数检测当前环境
+- 在 `useEffect` 中自动设置登录状态
+- 在 `handleStart` 函数中跳过登录检查
 
 ### 3. **metadata 配置可以保留或删除**
 
