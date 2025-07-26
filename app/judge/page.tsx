@@ -98,30 +98,30 @@ interface TerminalStep {
   apiCall?: ApiCall;
 }
 
-interface DatabaseAnalysis {
-  id: string;
-  conversation_id: string;
-  github_repo_url: string;
-  gmail: string;
-  analysis_result: string;
-  analysis_metadata?: {
-    usage?: {
-      total_tokens?: number;
-      prompt_tokens?: number;
-      completion_tokens?: number;
-    };
-  };
-  comment_cn_ng?: string;
-  comment_en_ng?: string;
-  comment_cn_paul?: string;
-  comment_en_paul?: string;
-  comment_cn_li?: string;
-  comment_en_li?: string;
-  comment_cn_sam?: string;
-  comment_en_sam?: string;
-  created_at: string;
-  updated_at: string;
-}
+// interface DatabaseAnalysis {
+//   id: string;
+//   conversation_id: string;
+//   github_repo_url: string;
+//   gmail: string;
+//   analysis_result: string;
+//   analysis_metadata?: {
+//     usage?: {
+//       total_tokens?: number;
+//       prompt_tokens?: number;
+//       completion_tokens?: number;
+//     };
+//   };
+//   comment_cn_ng?: string;
+//   comment_en_ng?: string;
+//   comment_cn_paul?: string;
+//   comment_en_paul?: string;
+//   comment_cn_li?: string;
+//   comment_en_li?: string;
+//   comment_cn_sam?: string;
+//   comment_en_sam?: string;
+//   created_at: string;
+//   updated_at: string;
+// }
 
 function TerminalSteps({ steps, isVisible, stepType = "business-research" }: { steps: string[], isVisible: boolean, stepType?: string }) {
   const [completedSteps, setCompletedSteps] = useState<string[]>([]);
