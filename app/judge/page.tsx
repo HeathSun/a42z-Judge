@@ -1229,7 +1229,6 @@ export default function A42zJudgeWorkflow() {
   const [difyAnalysis, setDifyAnalysis] = useState<DifyResponse | null>(null);
   const [isAnalyzingWithDify, setIsAnalyzingWithDify] = useState(false);
   const [webhookStatus, setWebhookStatus] = useState<'idle' | 'configuring' | 'configured' | 'error'>('idle');
-  const [databaseAnalysis, setDatabaseAnalysis] = useState<DatabaseAnalysis | null>(null);
 
   useEffect(() => {
     setIsClient(true);

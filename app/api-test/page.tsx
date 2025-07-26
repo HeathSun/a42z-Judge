@@ -3,7 +3,7 @@
 import { useState } from 'react';
 
 export default function ApiTestPage() {
-  const [testResult, setTestResult] = useState<any>(null);
+  const [testResult, setTestResult] = useState<string>('');
   const [loading, setLoading] = useState(false);
 
   const testApiEndpoint = async () => {
@@ -13,9 +13,9 @@ export default function ApiTestPage() {
         method: 'GET'
       });
       const data = await response.json();
-      setTestResult(data);
+      setTestResult(JSON.stringify(data, null, 2));
     } catch (error) {
-      setTestResult({ error: error instanceof Error ? error.message : 'Unknown error' });
+      setTestResult(JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }));
     } finally {
       setLoading(false);
     }
@@ -43,9 +43,9 @@ export default function ApiTestPage() {
         body: JSON.stringify(testData)
       });
       const data = await response.json();
-      setTestResult(data);
+      setTestResult(JSON.stringify(data, null, 2));
     } catch (error) {
-      setTestResult({ error: error instanceof Error ? error.message : 'Unknown error' });
+      setTestResult(JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }));
     } finally {
       setLoading(false);
     }
@@ -106,7 +106,7 @@ export default function ApiTestPage() {
           <div className="bg-white shadow rounded-lg p-6">
             <h3 className="text-lg font-semibold mb-4">测试结果</h3>
             <pre className="bg-gray-100 p-4 rounded text-sm overflow-auto">
-              {JSON.stringify(testResult, null, 2)}
+              {testResult}
             </pre>
           </div>
         )}

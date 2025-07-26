@@ -27,7 +27,7 @@ class DifyAPI {
   }
 
   // 只传 github_url，不需要 prompt
-  async triggerWorkflowWithRepoUrl(repoUrl: string): Promise<any> {
+  async triggerWorkflowWithRepoUrl(repoUrl: string): Promise<unknown> {
     const response = await fetch(`${this.baseURL}/workflows/trigger`, {
       method: 'POST',
       headers: {

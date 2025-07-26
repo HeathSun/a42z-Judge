@@ -7,9 +7,9 @@ interface DifyWorkflowData {
   workflow_result?: string;
   github_url?: string;
   analysis_type?: string;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
   timestamp?: string;
-  [key: string]: any; // 允许其他字段
+  [key: string]: unknown; // 允许其他字段
 }
 
 // 存储接收到的数据（用于调试和临时存储）
@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
     
     console.log('📥 Dify Workflow Data Received:', {
       user_id: body.user_id,
-      workflow_result: body.workflow_result?.substring(0, 100) + '...',
+      workflow_result: typeof body.workflow_result === 'string' ? body.workflow_result.substring(0, 100) + '...' : '',
       github_url: body.github_url,
       analysis_type: body.analysis_type,
       timestamp: body.timestamp || new Date().toISOString()
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 生成唯一ID用于存储
-    const dataId = body.user_id || `data_${Date.now()}`;
+    const dataId = typeof body.user_id === 'string' ? body.user_id : `data_${Date.now()}`;
     
     // 存储到内存（用于调试）
     receivedData.set(dataId, {
@@ -44,14 +44,14 @@ export async function POST(request: NextRequest) {
     });
 
     // 存储到 Supabase 数据库（如果配置了的话）
-    if (body.github_url && body.workflow_result) {
+    if (body.github_url && body.workflow_result && typeof body.workflow_result === 'string') {
       try {
         const { data, error } = await supabase
           .from('judge_comments')
           .insert({
             conversation_id: dataId,
             github_repo_url: body.github_url,
-            gmail: body.user_id || '',
+            gmail: typeof body.user_id === 'string' ? body.user_id : '',
             analysis_result: body.workflow_result,
             analysis_metadata: body.metadata,
             created_at: new Date().toISOString()
