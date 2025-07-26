@@ -247,7 +247,7 @@ export function DifyAnalysisDisplay({
               <div className="flex items-center gap-4 text-sm">
                 {call.tokenCost && (
                   <div className="text-blue-400">
-                    {call.tokenCost.toLocaleString()} tokens
+                    {typeof call.tokenCost === 'number' ? call.tokenCost.toLocaleString() : call.tokenCost} tokens
                   </div>
                 )}
                 {call.latency && (
@@ -283,7 +283,7 @@ export function DifyAnalysisDisplay({
               <div className="bg-white/5 p-3 rounded-lg border border-white/10">
                 <div className="text-gray-400 text-sm">Total Tokens</div>
                 <div className="text-white font-semibold">
-                  {analysisData.metadata.usage.total_tokens?.toLocaleString()}
+                  {typeof analysisData.metadata.usage.total_tokens === 'number' ? analysisData.metadata.usage.total_tokens.toLocaleString() : analysisData.metadata.usage.total_tokens || '0'}
                 </div>
               </div>
               <div className="bg-white/5 p-3 rounded-lg border border-white/10">
@@ -338,7 +338,7 @@ export function DifyAnalysisDisplay({
                       <div className="w-20 bg-gray-700 rounded-full h-2">
                         <div 
                           className="bg-gradient-to-r from-blue-500 to-green-500 h-2 rounded-full"
-                          style={{ width: `${Math.random() * 40 + 60}%` }}
+                          style={{ width: `${Math.floor(Math.random() * 40 + 60)}%` }}
                         />
                       </div>
                       <span className="text-white text-sm font-medium">

@@ -478,7 +478,7 @@ function TerminalSteps({ steps, isVisible, stepType = "business-research" }: { s
         id: `step-${index}`,
         text: step,
         type: "command",
-        duration: Math.floor(Math.random() * 600) + 200, // 保持原有的毫秒计算逻辑用于动画
+        duration: parseFloat((Math.floor(Math.random() * 600) + 200).toFixed(2)), // 保持原有的毫秒计算逻辑用于动画
       });
 
       // 在适当位置插入API调用
