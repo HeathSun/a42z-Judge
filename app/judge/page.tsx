@@ -1346,7 +1346,7 @@ function DifyExecutionStatusCard({
                   {status.responseData.message_id}
                 </span>
               </div>
-              {status.responseData.metadata && (
+              {status.responseData.metadata !== undefined && status.responseData.metadata !== null && (
                 <div>
                   <span className="font-medium">元数据:</span>
                   <pre className="mt-1 text-xs bg-white p-2 rounded border">
@@ -2155,7 +2155,7 @@ export default function A42zJudgeWorkflow() {
               </button>
             </div>
             <div className="space-y-3">
-              {Object.values(difyExecutionStatuses).map((status, index) => (
+              {Object.values(difyExecutionStatuses).map((status) => (
                 <DifyExecutionStatusCard
                   key={status.judgeType}
                   status={status}
