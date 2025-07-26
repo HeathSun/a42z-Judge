@@ -313,7 +313,7 @@ export function DifyAnalysisDisplay({
             <div className="bg-white/5 p-4 rounded-lg border border-white/10">
               <h4 className="text-white font-medium mb-2">Analysis Summary</h4>
               <TypingAnimation
-                className="text-gray-300 text-sm leading-relaxed font-chinese"
+                className="text-gray-300 text-sm leading-relaxed font-['Noto_Sans_SC']"
                 duration={50}
                 delay={500}
               >
