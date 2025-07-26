@@ -21,11 +21,13 @@ class DifyAPI {
   private baseURL: string;
   private apiKey: string;
   private webhookURL: string;
+  private publicURL: string;
 
   constructor() {
     this.baseURL = process.env.NEXT_PUBLIC_DIFY_API_URL || 'https://api.dify.ai/v1';
     this.apiKey = process.env.NEXT_PUBLIC_DIFY_API_KEY || '';
     this.webhookURL = process.env.NEXT_PUBLIC_WEBHOOK_URL || 'http://localhost:3000/api/webhook/dify';
+    this.publicURL = process.env.NEXT_PUBLIC_DIFY_PUBLIC_URL || 'https://udify.app/chat/9Eiom2dpjU9WpUI7';
   }
 
   // 发送消息到Dify workflow
@@ -63,17 +65,37 @@ class DifyAPI {
     }
   }
 
-  // 分析GitHub仓库
+  // 分析GitHub仓库 - 触发workflow
   async analyzeGitHubRepo(repoUrl: string): Promise<DifyResponse> {
-    const message = `请分析这个GitHub仓库的技术同质化程度：${repoUrl}。请从以下方面进行分析：
-1. 技术栈的独特性
-2. 架构模式的创新性
-3. 代码实现的相似性
-4. 与其他项目的差异化程度
-5. 技术债务和可维护性
-请给出详细的分析报告和评分。`;
+    try {
+      // 使用workflow触发端点
+      const response = await fetch(`${this.baseURL}/workflows/trigger`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          inputs: {
+            github_url: repoUrl
+          },
+          query: `分析GitHub仓库的技术同质化程度：${repoUrl}`,
+          response_mode: 'blocking',
+          user: 'a42z_judge_user'
+        }),
+      });
 
-    return this.sendMessage(message);
+      if (!response.ok) {
+        const errorData: DifyError = await response.json();
+        throw new Error(`Dify Workflow Error: ${errorData.message || response.statusText}`);
+      }
+
+      const data: DifyResponse = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Dify Workflow Error:', error);
+      throw error;
+    }
   }
 
   // 配置webhook

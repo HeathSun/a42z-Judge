@@ -1635,8 +1635,9 @@ export default function A42zJudgeWorkflow() {
         )
       )
 
-      // Simulate processing time - longer for steps with internal steps
-      const processingTime = nextStep.internalSteps ? 8000 : 3000;
+      // 对于Technical Homeomorphism Researcher，等待Dify分析完成
+      const processingTime = nextStep.id === "technical-research" ? 12000 : (nextStep.internalSteps ? 8000 : 3000);
+      
       setTimeout(() => {
         setWorkflowSteps((prev) =>
           prev.map((step) =>
@@ -1665,13 +1666,13 @@ export default function A42zJudgeWorkflow() {
   const getStepContent = (stepId: string): string => {
     switch (stepId) {
       case "technical-research":
-        // 优先显示数据库中的分析结果
-        if (databaseAnalysis?.analysis_result) {
-          return `Database Analysis: ${databaseAnalysis.analysis_result.substring(0, 200)}...`
-        }
-        // 如果没有数据库结果，显示Dify API结果
+        // 优先显示Dify API结果
         if (difyAnalysis?.answer) {
-          return `Dify AI Analysis: ${difyAnalysis.answer.substring(0, 200)}...`
+          return `Dify AI Analysis: ${difyAnalysis.answer}`
+        }
+        // 如果没有Dify结果，显示数据库中的分析结果
+        if (databaseAnalysis?.analysis_result) {
+          return `Database Analysis: ${databaseAnalysis.analysis_result}`
         }
         return "Discovered 23 similar technical implementations across GitHub and GitLab. Identified common architectural patterns and technology stacks in healthcare AI projects."
       case "code-quality-research":
