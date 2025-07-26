@@ -40,7 +40,7 @@ class DifyAPI {
   }
 
   // 只传 github_url，不需要 prompt
-  async triggerWorkflowWithRepoUrl(repoUrl: string): Promise<unknown> {
+  async triggerWorkflowWithRepoUrl(repoUrl: string): Promise<DifyResponse> {
     const response = await fetch(`${this.baseURL}/workflows/trigger`, {
       method: 'POST',
       headers: {
@@ -54,7 +54,8 @@ class DifyAPI {
     if (!response.ok) {
       throw new Error(await response.text());
     }
-    return response.json();
+    const result = await response.json();
+    return result as DifyResponse;
   }
 }
 
