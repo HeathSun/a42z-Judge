@@ -151,9 +151,9 @@ export default function PdfTestPage() {
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
           <h3 className="text-lg font-semibold text-blue-900 mb-4">Instructions</h3>
           <div className="space-y-2 text-sm text-blue-800">
-            <p><strong>1. Login:</strong> Make sure you're logged in with your Google account</p>
+            <p><strong>1. Login:</strong> Make sure you&apos;re logged in with your Google account</p>
             <p><strong>2. Select PDF:</strong> Choose a PDF file (max 50MB)</p>
-            <p><strong>3. Upload:</strong> The file will be saved as "{userEmail || 'your-email'}.pdf"</p>
+            <p><strong>3. Upload:</strong> The file will be saved as &quot;{userEmail || 'your-email'}.pdf&quot;</p>
             <p><strong>4. Access:</strong> The file will be available at the generated URL</p>
           </div>
         </div>
