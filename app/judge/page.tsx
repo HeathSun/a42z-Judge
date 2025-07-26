@@ -98,31 +98,6 @@ interface TerminalStep {
   apiCall?: ApiCall;
 }
 
-interface DatabaseAnalysis {
-  id: string;
-  conversation_id: string;
-  github_repo_url: string;
-  gmail: string;
-  analysis_result: string;
-  analysis_metadata?: {
-    usage?: {
-      total_tokens?: number;
-      prompt_tokens?: number;
-      completion_tokens?: number;
-    };
-  };
-  comment_cn_ng?: string;
-  comment_en_ng?: string;
-  comment_cn_paul?: string;
-  comment_en_paul?: string;
-  comment_cn_li?: string;
-  comment_en_li?: string;
-  comment_cn_sam?: string;
-  comment_en_sam?: string;
-  created_at: string;
-  updated_at: string;
-}
-
 function TerminalSteps({ steps, isVisible, stepType = "business-research" }: { steps: string[], isVisible: boolean, stepType?: string }) {
   const [completedSteps, setCompletedSteps] = useState<string[]>([]);
   const [currentStep, setCurrentStep] = useState<string | null>(null);
@@ -1292,7 +1267,7 @@ export default function A42zJudgeWorkflow() {
         if (user && !error) {
           setIsLoggedIn(true);
           setShowLogin(false);
-          setUserEmail(user.email);
+          setUserEmail(user.email || null);
         } else {
           setIsLoggedIn(false);
           setShowLogin(true);
@@ -1308,7 +1283,7 @@ export default function A42zJudgeWorkflow() {
           if (event === 'SIGNED_IN' && session?.user) {
             setIsLoggedIn(true);
             setShowLogin(false);
-            setUserEmail(session.user.email);
+            setUserEmail(session.user.email || null);
             setLoginError('');
           } else if (event === 'SIGNED_OUT') {
             setIsLoggedIn(false);

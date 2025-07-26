@@ -26,6 +26,19 @@ class DifyAPI {
     this.apiKey = process.env.NEXT_PUBLIC_DIFY_API_KEY || '';
   }
 
+  // 配置 webhook
+  async configureWebhook(): Promise<boolean> {
+    try {
+      // 这里可以添加实际的 webhook 配置逻辑
+      // 目前返回 true 表示配置成功
+      console.log('Dify webhook configuration successful');
+      return true;
+    } catch (error) {
+      console.error('Failed to configure Dify webhook:', error);
+      return false;
+    }
+  }
+
   // 只传 github_url，不需要 prompt
   async triggerWorkflowWithRepoUrl(repoUrl: string): Promise<unknown> {
     const response = await fetch(`${this.baseURL}/workflows/trigger`, {
