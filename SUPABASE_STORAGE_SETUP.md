@@ -10,6 +10,26 @@
 4. 输入 bucket 名称：`pdf`
 5. 选择 "Public" 或 "Private"（根据你的需求）
 
+## 故障排除
+
+如果文件没有上传成功，请按以下步骤检查：
+
+### 1. 检查 Bucket 是否存在
+访问 `/pdf-debug` 页面查看 bucket 状态
+
+### 2. 检查 RLS 策略
+确保已正确配置权限策略
+
+### 3. 检查环境变量
+确保 `.env.local` 文件包含正确的 Supabase 配置：
+```
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+### 4. 检查浏览器控制台
+查看详细的错误信息和网络请求
+
 ## 配置 RLS 策略
 
 ### 允许上传 PDF 文件

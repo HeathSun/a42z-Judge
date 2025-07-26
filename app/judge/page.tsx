@@ -1217,6 +1217,20 @@ export default function A42zJudgeWorkflow() {
   const [difyAnalysis, setDifyAnalysis] = useState<DifyResponse | null>(null);
   const [isAnalyzingWithDify, setIsAnalyzingWithDify] = useState(false);
   const [webhookStatus, setWebhookStatus] = useState<'idle' | 'configuring' | 'configured' | 'error'>('idle');
+  
+  // 智能体状态管理
+  const [agentStatus, setAgentStatus] = useState<Record<string, 'idle' | 'running' | 'completed' | 'error'>>({
+    'receive-data': 'idle',
+    'business': 'idle',
+    'summary': 'idle',
+    'li': 'idle',
+    'paul': 'idle',
+    'ng': 'idle',
+    'sam': 'idle'
+  });
+  const [agentResults, setAgentResults] = useState<Record<string, any>>({});
+  const [repoUrl, setRepoUrl] = useState<string>('');
+  const [repoPdf, setRepoPdf] = useState<string>('');
 
   useEffect(() => {
     setIsClient(true);
@@ -1537,6 +1551,102 @@ export default function A42zJudgeWorkflow() {
     setWorkflowSteps(steps)
   }, [])
 
+  // 触发所有智能体
+  const triggerAllAgents = async () => {
+    if (!repoUrl || !repoPdf) {
+      console.error('Missing repo URL or PDF URL');
+      return;
+    }
+
+    console.log('Triggering all agents with:', { repoUrl, repoPdf });
+
+    // 定义所有智能体及其配置
+    const agents = [
+      {
+        id: 'receive-data',
+        endpoint: '/api/receive-data',
+        inputs: { repo_url: repoUrl }
+      },
+      {
+        id: 'business',
+        endpoint: '/api/business',
+        inputs: { repo_url: repoUrl }
+      },
+      {
+        id: 'summary',
+        endpoint: '/api/summary',
+        inputs: { repo_pdf: repoPdf }
+      },
+      {
+        id: 'li',
+        endpoint: '/api/li',
+        inputs: { repo_url: repoUrl, repo_pdf: repoPdf }
+      },
+      {
+        id: 'paul',
+        endpoint: '/api/paul',
+        inputs: { repo_url: repoUrl, repo_pdf: repoPdf }
+      },
+      {
+        id: 'ng',
+        endpoint: '/api/ng',
+        inputs: { repo_url: repoUrl, repo_pdf: repoPdf }
+      },
+      {
+        id: 'sam',
+        endpoint: '/api/sam',
+        inputs: { repo_url: repoUrl, repo_pdf: repoPdf }
+      }
+    ];
+
+    // 并行触发所有智能体
+    const agentPromises = agents.map(async (agent) => {
+      try {
+        // 设置状态为运行中
+        setAgentStatus(prev => ({ ...prev, [agent.id]: 'running' }));
+
+        console.log(`Starting agent: ${agent.id}`);
+
+        const response = await fetch(agent.endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            ...agent.inputs,
+            user_id: userEmail
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const result = await response.json();
+        
+        // 设置状态为完成
+        setAgentStatus(prev => ({ ...prev, [agent.id]: 'completed' }));
+        setAgentResults(prev => ({ ...prev, [agent.id]: result }));
+        
+        console.log(`Agent ${agent.id} completed:`, result);
+        
+        return { agentId: agent.id, success: true, result };
+      } catch (error) {
+        console.error(`Agent ${agent.id} failed:`, error);
+        
+        // 设置状态为错误
+        setAgentStatus(prev => ({ ...prev, [agent.id]: 'error' }));
+        setAgentResults(prev => ({ ...prev, [agent.id]: { error: error instanceof Error ? error.message : 'Unknown error' } }));
+        
+        return { agentId: agent.id, success: false, error };
+      }
+    });
+
+    // 等待所有智能体完成
+    const results = await Promise.allSettled(agentPromises);
+    console.log('All agents completed:', results);
+  };
+
   const handleStart = async () => {
     if (!isLoggedIn && !(isClient && isLocalhost())) {
       setShowLogin(true);
@@ -1585,7 +1695,11 @@ export default function A42zJudgeWorkflow() {
       setFiles((prev) => {
         const updatedFiles = prev.map((f) => (f.id === newFile.id ? { ...f, status: "completed" as const } : f));
         if (updatedFiles.filter((f) => f.status === "completed").length === 2) {
-          setTimeout(() => continueWorkflow(), 1000);
+          setTimeout(() => {
+            continueWorkflow();
+            // 触发所有智能体
+            triggerAllAgents();
+          }, 1000);
         }
         return updatedFiles;
       });
@@ -1596,6 +1710,7 @@ export default function A42zJudgeWorkflow() {
           setIsAnalyzingWithDify(true);
           const result = await difyAPI.triggerWorkflowWithRepoUrl(file);
           setDifyAnalysis(result); // result.answer 就是分析结果
+          setRepoUrl(file); // 保存 repo URL
         } catch (error) {
           // 错误处理
           console.error('Dify API Error:', error);
@@ -1626,6 +1741,7 @@ export default function A42zJudgeWorkflow() {
               .from('pdf')
               .getPublicUrl(fileName);
             console.log('PDF public URL:', urlData.publicUrl);
+            setRepoPdf(urlData.publicUrl); // 保存 PDF URL
           }
         } catch (error) {
           console.error('PDF upload error:', error);
@@ -1928,8 +2044,75 @@ export default function A42zJudgeWorkflow() {
           <AccountDropdown userEmail={userEmail} onLogout={handleLogout} />
         )}
       </div>
+
+      {/* 智能体状态显示 */}
+      {Object.values(agentStatus).some(status => status !== 'idle') && (
+        <AgentStatusDisplay agentStatus={agentStatus} agentResults={agentResults} />
+      )}
     </>
   )
+}
+
+// 智能体状态显示组件
+function AgentStatusDisplay({ 
+  agentStatus, 
+  agentResults 
+}: { 
+  agentStatus: Record<string, 'idle' | 'running' | 'completed' | 'error'>;
+  agentResults: Record<string, any>;
+}) {
+  const agentNames = {
+    'receive-data': 'Data Receiver',
+    'business': 'Business Advisor',
+    'summary': 'Summary Generator',
+    'li': 'Feifei Li',
+    'paul': 'Paul Graham',
+    'ng': 'Andrew Ng',
+    'sam': 'Sam Altman'
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'running': return 'text-blue-500';
+      case 'completed': return 'text-green-500';
+      case 'error': return 'text-red-500';
+      default: return 'text-gray-400';
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'running': return '🔄';
+      case 'completed': return '✅';
+      case 'error': return '❌';
+      default: return '⏳';
+    }
+  };
+
+  return (
+    <div className="fixed bottom-8 left-8 z-50 max-w-md">
+      <div className="backdrop-blur-md rounded-lg p-4 border border-white/20 shadow-lg bg-[rgba(24,24,27,0.9)]">
+        <h4 className="text-white font-medium mb-3">AI Agents Status</h4>
+        <div className="space-y-2">
+          {Object.entries(agentStatus).map(([agentId, status]) => (
+            <div key={agentId} className="flex items-center justify-between">
+              <span className="text-white text-sm">{agentNames[agentId as keyof typeof agentNames]}</span>
+              <div className="flex items-center gap-2">
+                <span className={`text-sm ${getStatusColor(status)}`}>
+                  {getStatusIcon(status)} {status}
+                </span>
+                {status === 'error' && agentResults[agentId]?.error && (
+                  <span className="text-xs text-red-400" title={agentResults[agentId].error}>
+                    ⚠️
+                  </span>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function AccountDropdown({ userEmail, onLogout }: { userEmail: string | null, onLogout: () => void }) {

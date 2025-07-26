@@ -3,16 +3,16 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { github_url, user_id } = body;
+    const { repo_url, repo_pdf, user_id } = body;
 
     // 调用 Dify 聊天机器人
-    const response = await fetch('https://udify.app/chat/iOjmqrK3tPqx2gZS', {
+    const response = await fetch('https://api.dify.ai/v1/workflows/iOjmqrK3tPqx2gZS', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        inputs: { github_url },
+        inputs: { repo_url, repo_pdf },
         user: user_id || 'anonymous'
       }),
     });
