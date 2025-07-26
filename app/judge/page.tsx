@@ -693,7 +693,7 @@ function WorkflowCard({ step, onToggle }: { step: WorkflowStep; onToggle: (id: s
                   {step.internalSteps && (
                     <TerminalSteps 
                       steps={step.internalSteps} 
-                      isVisible={((step.status as any) === "loading" || (step.status as any) === "completed")}
+                      isVisible={((step.status as WorkflowStep['status']) === "loading" || (step.status as WorkflowStep['status']) === "completed")}
                       stepType={step.id}
                     />
                   )}
@@ -749,7 +749,7 @@ function WorkflowCard({ step, onToggle }: { step: WorkflowStep; onToggle: (id: s
                       </div>
                       <TerminalSteps 
                         steps={step.internalSteps} 
-                        isVisible={((step.status as any) === "loading" || (step.status as any) === "completed")}
+                        isVisible={((step.status as WorkflowStep['status']) === "loading" || (step.status as WorkflowStep['status']) === "completed")}
                         stepType={step.id}
                       />
                     </>
