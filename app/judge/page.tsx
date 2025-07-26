@@ -642,9 +642,6 @@ function CitationTooltip({ citation, children }: { citation: Citation; children:
 
 // Expandable Card Component
 function WorkflowCard({ step, onToggle }: { step: WorkflowStep; onToggle: (id: string) => void }) {
-  // 获取全局的 difyAnalysis 状态
-  const [difyAnalysis, setDifyAnalysis] = useState<DifyResponse | null>(null);
-  
   return (
     <div
       className="backdrop-blur-md rounded-lg border border-white/20 shadow-lg bg-[rgba(24,24,27,0.7)] overflow-visible"

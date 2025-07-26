@@ -1,8 +1,8 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { motion, MotionProps } from "motion/react";
-import { useEffect, useRef, useState } from "react";
+import { motion } from "motion/react";
+import { useEffect, useState } from "react";
 import { TypingAnimation } from "./typing-animation";
 import { 
   Search, 
@@ -12,7 +12,6 @@ import {
   TrendingUp, 
   AlertTriangle,
   CheckCircle,
-  ExternalLink,
   BarChart3,
   Zap,
   Shield,
@@ -57,13 +56,22 @@ interface ApiCallItem {
   latency?: number;
 }
 
+interface ParsedAnalysis {
+  summary: string;
+  scores: string[];
+  fullContent: string;
+}
+
 export function DifyAnalysisDisplay({ 
   analysisData, 
   isVisible, 
   className 
 }: DifyAnalysisDisplayProps) {
-  const [currentStep, setCurrentStep] = useState(0);
-  const [displayedAnalysis, setDisplayedAnalysis] = useState("");
+  const [displayedAnalysis, setDisplayedAnalysis] = useState<ParsedAnalysis>({
+    summary: "",
+    scores: [],
+    fullContent: ""
+  });
   const [showAnalysis, setShowAnalysis] = useState(false);
 
   // 模拟命令执行步骤
@@ -154,15 +162,15 @@ export function DifyAnalysisDisplay({
     }
   }, [isVisible, analysisData]);
 
-  const parseAnalysisContent = (content: string) => {
+  const parseAnalysisContent = (content: string): ParsedAnalysis => {
     // 提取关键信息
     const lines = content.split('\n');
-    const summary = lines.find(line => line.includes('总结') || line.includes('Summary'));
-    const scores = lines.filter(line => line.includes('得分') || line.includes('score'));
+    const summary = lines.find(line => line.includes('总结') || line.includes('Summary')) || "分析完成";
+    const scores = lines.filter(line => line.includes('得分') || line.includes('score')).slice(0, 5); // 只显示前5个得分
     
     return {
-      summary: summary || "分析完成",
-      scores: scores.slice(0, 5), // 只显示前5个得分
+      summary,
+      scores,
       fullContent: content
     };
   };
@@ -305,7 +313,7 @@ export function DifyAnalysisDisplay({
             <div className="bg-white/5 p-4 rounded-lg border border-white/10">
               <h4 className="text-white font-medium mb-2">Analysis Summary</h4>
               <TypingAnimation
-                className="text-gray-300 text-sm leading-relaxed"
+                className="text-gray-300 text-sm leading-relaxed font-chinese"
                 duration={50}
                 delay={500}
               >
