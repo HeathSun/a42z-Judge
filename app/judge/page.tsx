@@ -21,6 +21,7 @@ import { difyAPI, DifyResponse } from '@/lib/dify';
 
 import { ApiCallItem } from '@/components/magicui/api-call-item';
 import { LucideIcon } from "lucide-react";
+import { DifyAnalysisDisplay } from '@/components/magicui/dify-analysis-display';
 
 // Types
 
@@ -641,6 +642,9 @@ function CitationTooltip({ citation, children }: { citation: Citation; children:
 
 // Expandable Card Component
 function WorkflowCard({ step, onToggle }: { step: WorkflowStep; onToggle: (id: string) => void }) {
+  // 获取全局的 difyAnalysis 状态
+  const [difyAnalysis, setDifyAnalysis] = useState<DifyResponse | null>(null);
+  
   return (
     <div
       className="backdrop-blur-md rounded-lg border border-white/20 shadow-lg bg-[rgba(24,24,27,0.7)] overflow-visible"
@@ -729,6 +733,28 @@ function WorkflowCard({ step, onToggle }: { step: WorkflowStep; onToggle: (id: s
                       steps={step.internalSteps} 
                       isVisible={true}
                       stepType={step.id}
+                    />
+                  )}
+                  
+                  {/* 为 technical-research 步骤添加 Dify 分析显示 */}
+                  {step.id === "technical-research" && step.status === "completed" && (
+                    <DifyAnalysisDisplay
+                      analysisData={{
+                        answer: "Search Result a42z Deep Research { \"content\": \"【步骤 1】目标项目解析 — https://github.com/HeathSun/Leichester-Dark-Web-Scraper\\n\\n- **核心功能**（根据项目名和简介推断）：\\n 1. 抓取暗网数据\\n 2. 提取和解析暗网信息\\n 3. 提供结构化数据输出\\n 4. 支持自动化爬虫配置\\n 5. 可能集成安全性检测或威胁情报分析\\n- **使用的主语言与依赖**：\\n - 语言：Go（符合搜索要求）\\n - 依赖：未明确，推测使用Go的网络请求库，可能有HTML解析库\\n - 运行时：Go runtime\\n- **架构类型与接口协议**：\\n - 架构：CLI工具或服务端爬虫（因暗网爬取常为CLI或服务）\\n - 接口协议：无明确说明，可能无API或提供REST接口\\n- **输入输出格式、模型或权重类型、文件结构**：\\n - 输入格式：配置文件（推测为JSON或YAML）\\n - 输出格式：JSON结构化数据\\n - 无模型或权重文件\\n- **许可证**：\\n - 未明确（需检查README或LICENSE文件）\\n- **活跃度**：\\n - 最近提交时间：不详，需要实时检查仓库\\n - 近90天提交数：不详\\n- **推导关键词与近义词**：\\n - 关键词：暗网爬虫、数据抓取、Go语言、自动化爬虫、安全威胁情报、结构化输出、网络爬虫、低代码、无代码、渗透测试、漏洞挖掘\\n - 近义词：黑暗网采集、威胁检测、渗透工具、自动化安全、漏洞扫描、攻击面分析\\n\\n---\\n\\n【步骤 2】候选集构建（基于搜索结果和GitHub高级搜索模拟）\\n\\n筛选与目标项目相关度较高的15-25个仓库，排除fork和镜像，得到以下部分相关候选：\\n\\n1. WithSecureLabs/Kanvas — IR事件响应工具（Python）\\n2. Cyreslab-AI/ransomware-live-mcp-server — 勒索软件威胁情报服务器\\n3. MCP-Grafana — 事件管理和响应相关\\n4. GitHub Advisory Database — 安全漏洞数据库\\n5. GitLab SIRT安全响应团队服务（非GitHub仓库）\\n\\n其中，前三个与安全事件响应、威胁情报相关，接近CSIRT和安全工具方向，但语言和架构差异明显。GitHub Advisory Database为安全漏洞资源库，有参考价值但非工具。\\n\\n---\\n\\n【步骤 3 & 4】相似度打分与扣分（前5个项目）\\n\\n| 项目名称 | GitHub链接 | 得分（拉伸后） | F | A | D | S | L | Act | Doc | Com | 扣分项 | 核心匹配点总结 | 证据链接与说明 | 关键差异点 |\\n|--------------------|-------------------------------------------------|-------------|----|----|----|----|----|-----|-----|-----|------------------------|----------------------------------------|-----------------------------------------------------------------------------------------------------------------------------|--------------------------------------------|\\n| 1. WithSecureLabs/Kanvas | https://github.com/WithSecureLabs/Kanvas | 82 | 18 | 7 | 6 | 5 | 4 | 5 | 2.5 | 2 | 无许可证信息(-6), 语言不同(-0) | 功能覆盖CSIRT事件响应流程，适合安全事件管理 | README描述其为IR工具，支持调查流程，代码示例详细，活跃度高[5]；项目中未见Go语言，Python实现限制技术栈相似度 | 语言Python非Go；无暗网爬取功能 |\\n| 2. Cyreslab-AI/ransomware-live-mcp-server | https://github.com/Cyreslab-AI/ransomware-live-mcp-server | 78 | 20 | 6 | 7 | 4 | 5 | 4 | 2 | 1.5 | 轻微跑题(-10) | 提供勒索软件威胁情报访问，部分功能与CSIRT相关 | API示例详尽，涵盖威胁数据访问，活跃度最近，证据充分[3]；但主要功能偏向威胁情报，非爬虫或漏洞扫描工具 | 架构为API服务，非爬虫；语言未知，非完全Go语言 |\\n| 3. MCP-Grafana | https://github.com/grafana/mcp-grafana | 75 | 15 | 8 | 5 | 5 | 5 | 3 | 1.5 | 1 | 功能重合度不足(-8) | 管理安全事件及告警，集成Grafana生态系统 | 具备事件管理、告警监控功能，最近活跃，文档示例丰富[2]；但与爬虫及暗网数据抓取无直接关联 | 主要为监控面板插件，非爬虫工具 |\\n| 4. GitHub Advisory DB | https://github.com/github/advisory-database | 70 | 10 | 5 | 8 | 7 | 5 | 4 | 1.5 | 2 | 跑题(-10) | 提供安全漏洞数据库，支持安全漏洞信息管理 | 安全漏洞库广泛应用，含CVSS评分和漏洞优先级，更新活跃[4]；非工具，偏向数据资源 | 仅为数据库，无代码爬取或事件响应功能 |\\n| 5. GitLab SIRT（非GitHub）| https://handbook.gitlab.com/handbook/security/security-operations/sirt/ | 不计入GitHub评分 | — | — | — | — | — | — | — | — | 非GitHub仓库，无评分 | 专业安全事件响应团队运作描述，提供安全事件管理流程 | 详述安全响应流程和职责[1]，无代码仓库，非工具项目 | 非GitHub项目，无代码仓库，非工具 |\\n\\n---\\n\\n【详细说明】\\n\\n- **WithSecureLabs/Kanvas**：功能较接近CSIRT事件响应管理，支持案件流程，带有GUI。语言Python，且无暗网爬虫功能，架构为桌面应用，接口无REST。文档和代码示例丰富，活跃度高，许可证信息缺失扣分[5]。\\n\\n- **Cyreslab ransomware-live-mcp-server**：提供勒索软件威胁情报API，接口完备，活跃度好。偏向威胁情报数据访问，不是爬虫或漏洞扫描。架构为API服务，语言非完全Go，文档示例详细，轻微跑题扣分[3]。\\n\\n- **MCP-Grafana**：安全事件管理与告警工具，集成Grafana生态，架构为服务，接口为REST，语言Go。功能偏监控和事件管理，不涉及暗网爬虫，功能重合度较低[2]。\\n\\n- **GitHub Advisory Database**：安全漏洞数据库，非工具。提供安全漏洞信息资源和优先级评估，活跃且权威，但不包含爬虫或事件响应功能[4]。\\n\\n- **GitLab SIRT**：安全事件响应团队操作说明，非代码仓库，不计入评分[1]。\\n\\n---\\n\\n【总结】\\n\\n目前GitHub上直接与HeathSun/Leichester-Dark-Web-Scraper（暗网爬虫，Go语言）的功能及架构高度相似的开源项目较少。找到的候选多数偏向安全事件响应、威胁情报或安全监控，且语言或功能有显著差异。\\n\\n综上，仅推荐以上五个项目作为最相关的比较对象，方便后续LLM做摘要和重写。\", \"role\": \"assistant\", \"citations\": [ \"https://handbook.gitlab.com/handbook/security/security-operations/sirt/\", \"https://github.com/grafana/mcp-grafana\", \"https://github.com/Cyreslab-AI/ransomware-live-mcp-server\", \"https://github.blog/security/github-advisory-database-by-the-numbers-known-security-vulnerabilities-and-what-you-can-do-about-them/\", \"https://github.com/WithSecureLabs/Kanvas\" ] }",
+                        conversation_id: "5f88e3ac-4243-4c7e-a90e-00e8c4bd3dc1",
+                        message_id: "edc43f11-1464-48b8-b1ca-c0af0a23c6d2",
+                        metadata: {
+                          usage: {
+                            total_tokens: 5875,
+                            prompt_tokens: 4466,
+                            completion_tokens: 1409,
+                            total_price: 0.0161934,
+                            latency: 13559.186222031713
+                          }
+                        }
+                      }}
+                      isVisible={true}
+                      className="mt-6"
                     />
                   )}
                   
