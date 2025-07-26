@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { supabase } from '@/lib/supabase';
 
 // Webhook事件类型
 interface DifyWebhookEvent {
@@ -20,6 +21,9 @@ interface DifyWebhookEvent {
     message: string;
   };
   timestamp: string;
+  // 添加GitHub URL和用户信息
+  github_url?: string;
+  user_email?: string;
 }
 
 // 存储分析结果的全局变量（在生产环境中应该使用数据库）
@@ -33,7 +37,9 @@ export async function POST(request: NextRequest) {
       event: body.event,
       conversation_id: body.conversation_id,
       message_id: body.message_id,
-      timestamp: body.timestamp
+      timestamp: body.timestamp,
+      github_url: body.github_url,
+      user_email: body.user_email
     });
 
     // 验证webhook签名（可选，增加安全性）
@@ -55,11 +61,34 @@ export async function POST(request: NextRequest) {
         
       case 'analysis_completed':
         console.log('Analysis completed for conversation:', body.conversation_id);
-        // 存储分析结果
+        
+        // 存储分析结果到内存
         analysisResults.set(body.conversation_id, body);
         
-        // 这里可以触发前端更新
-        // 例如通过WebSocket或Server-Sent Events推送结果
+        // 存储分析结果到Supabase数据库
+        if (body.result?.answer) {
+          try {
+            const { data, error } = await supabase
+              .from('judge_comments')
+              .insert({
+                conversation_id: body.conversation_id,
+                github_repo_url: body.github_url || '',
+                gmail: body.user_email || '',
+                analysis_result: body.result.answer,
+                analysis_metadata: body.result.metadata,
+                created_at: new Date().toISOString()
+              });
+
+            if (error) {
+              console.error('Supabase insert error:', error);
+            } else {
+              console.log('Analysis result saved to database:', data);
+            }
+          } catch (dbError) {
+            console.error('Database error:', dbError);
+          }
+        }
+        
         break;
         
       case 'analysis_error':

@@ -1,95 +1,312 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# a42z - The World's First AI Judge for Hackathons
 
-## Getting Started
+[![Next.js](https://img.shields.io/badge/Next.js-15.2.4-black)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
+[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
-First, run the development server:
+> **Building the Trust Layer for the AI Era - Capturing Real Signals Beyond the Hype**
 
+a42z is the world's first autonomous, insightful, and fair AI judging system for hackathons. We're creating a comprehensive evaluation engine that combines multimodal AI analysis with expert knowledge to deliver transparent, explainable, and bias-reduced assessment results.
+
+## 🌟 Vision
+
+In the AI era, we need a new paradigm for evaluating innovation. Traditional hackathon judging relies heavily on subjective human judgment, leading to inconsistencies and missed opportunities. a42z addresses this by creating a sophisticated AI-powered evaluation system that:
+
+- **Cross-references** project materials (code, demo decks, PRDs) against open-source repositories and past winning cases
+- **Leverages** quality signals like GitHub stars, activity metrics, and code quality indicators
+- **Emulates** the judgment of tech industry leaders through AI twins
+- **Delivers** structured, multi-dimensional assessments that go beyond simple scoring
+
+## 🏗️ Architecture
+
+### Core Components
+
+#### 1. **Multimodal AI Judging Engine**
+- **Input Processing**: Handles PDF pitch decks and GitHub repository URLs
+- **Cross-Reference Analysis**: Compares against open-source projects and historical data
+- **Quality Signal Extraction**: Analyzes GitHub metrics, code quality, and community engagement
+- **Real-time Processing**: Streams analysis results through webhooks
+
+#### 2. **Specialized AI Researchers**
+
+**Business Potential Researcher**
+- Sources: Crunchbase, TechCrunch, Y Combinator
+- Metrics: Fundraising rounds, market share, MRR/ARR, ROI
+- Analysis: Idea space capacity, profit margins, market trends
+
+**Code Quality Researcher**
+- Sources: GitHub API, RepoIntel, SonarQube
+- Metrics: System robustness, trending/stars, commits/issues
+- Analysis: Code metadata, paradigms, documentation quality
+
+**Technical Homeomorphism Researcher**
+- Sources: Dockerfiles, package.json, requirements, configs
+- Metrics: Novelty of core technology, cross-domain applicability
+- Analysis: Tech sophistication, problem-solving impact, scalability
+
+#### 3. **Carbon Panel Experts**
+AI twins of tech industry leaders providing structured evaluations:
+
+- **Andrew Ng** (Deeplearning.ai) - AI/ML expertise
+- **Paul Graham** (Y Combinator) - Startup evaluation
+- **Feifei Li** (ImageNet) - Computer vision and research
+- **Sam Altman** (OpenAI) - AI innovation and scaling
+
+#### 4. **External Data Pipeline**
+- **Scrapers**: X/Twitter, Blogs, YouTube
+- **Processing**: Trunking, Embedding, Reranking
+- **Storage**: Vector Database for semantic search
+
+## 🚀 Features
+
+### Real-time Analysis
+- **Live API Calls**: Simulated external service integrations
+- **Progress Tracking**: Real-time workflow step updates
+- **Webhook Integration**: Dify API for advanced AI analysis
+- **Database Storage**: Supabase for persistent results
+
+### Interactive UI
+- **Magic UI Components**: Animated cards, buttons, and effects
+- **Terminal Animations**: Realistic API call simulations
+- **Responsive Design**: Works across all devices
+- **Dark Theme**: Modern, professional interface
+
+### Expert Evaluation
+- **Multi-dimensional Scoring**: Technical, business, innovation metrics
+- **Structured Comments**: Bilingual (Chinese/English) expert feedback
+- **Debate Simulation**: AI twins discuss and reach consensus
+- **Transparent Process**: Full visibility into evaluation criteria
+
+## 🛠️ Technology Stack
+
+### Frontend
+- **Next.js 15.2.4** - React framework with App Router
+- **TypeScript 5.0** - Type-safe development
+- **Tailwind CSS 4** - Utility-first styling
+- **Framer Motion** - Smooth animations and transitions
+
+### Backend & APIs
+- **Dify API** - AI workflow orchestration
+- **Supabase** - Database and authentication
+- **GitHub API** - Repository analysis
+- **Webhooks** - Real-time data flow
+
+### UI Components
+- **Magic UI** - Custom animated components
+- **Radix UI** - Accessible component primitives
+- **Lucide Icons** - Beautiful iconography
+- **Shiki** - Syntax highlighting
+
+### External Integrations
+- **Crunchbase API** - Business intelligence
+- **TechCrunch API** - News and trends
+- **RepoIntel API** - Repository intelligence
+- **SonarQube API** - Code quality analysis
+
+## 📦 Installation
+
+### Prerequisites
+- Node.js 18+ 
+- npm, yarn, or pnpm
+- Supabase account
+- Dify API access
+
+### Quick Start
+
+1. **Clone the repository**
+```bash
+git clone https://github.com/your-org/a42z-home.git
+cd a42z-home
+```
+
+2. **Install dependencies**
+```bash
+npm install
+# or
+yarn install
+# or
+pnpm install
+```
+
+3. **Configure environment variables**
+```bash
+cp .env.example .env.local
+```
+
+Edit `.env.local` with your credentials:
+```env
+# Supabase Configuration
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+
+# Dify Configuration
+NEXT_PUBLIC_DIFY_API_URL=https://api.dify.ai/v1
+NEXT_PUBLIC_DIFY_API_KEY=your_dify_api_key
+NEXT_PUBLIC_WEBHOOK_URL=https://your-domain.com/api/webhook/dify
+```
+
+4. **Set up the database**
+```sql
+-- Run the SQL from SUPABASE_SETUP.md
+-- This creates the judge_comments table and necessary indexes
+```
+
+5. **Start the development server**
 ```bash
 npm run dev
 # or
 yarn dev
 # or
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+6. **Open your browser**
+Navigate to [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🔧 Configuration
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Dify Workflow Setup
+1. Access your Dify workflow at: `https://cloud.dify.ai/app/your-app-id/develop`
+2. Configure HTTP Request tool with webhook URL: `https://your-domain.com/api/webhook/dify`
+3. Set up the analysis workflow for GitHub repository evaluation
 
-## Learn More
+### Supabase Database
+1. Create a new Supabase project
+2. Run the SQL commands from `SUPABASE_SETUP.md`
+3. Configure Row Level Security (RLS) policies
+4. Set up API keys and CORS settings
 
-To learn more about Next.js, take a look at the following resources:
+### Production Deployment
+1. Deploy to Vercel or your preferred platform
+2. Configure environment variables
+3. Set up custom domain (optional)
+4. Enable webhook endpoints
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 📊 Usage
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### For Hackathon Organizers
+1. **Upload Project Materials**: Submit GitHub repositories and pitch decks
+2. **Real-time Analysis**: Watch as AI researchers evaluate projects
+3. **Expert Feedback**: Receive structured comments from AI twins
+4. **Transparent Results**: View detailed scoring and reasoning
 
-## Deploy on Vercel
+### For Participants
+1. **Submit Projects**: Upload GitHub links and documentation
+2. **Track Progress**: Monitor analysis in real-time
+3. **Receive Feedback**: Get expert evaluation and suggestions
+4. **Understand Scores**: See detailed breakdown of assessments
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### API Integration
+```typescript
+// Example: Submit a GitHub repository for analysis
+const response = await fetch('/api/analyze', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    github_url: 'https://github.com/user/project',
+    user_email: 'user@example.com'
+  })
+});
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🎯 Key Benefits
 
-## 解决方法
+### For Organizers
+- **Consistent Evaluation**: AI-powered analysis reduces human bias
+- **Scalable Process**: Handle hundreds of projects efficiently
+- **Transparent Results**: Clear reasoning for all scores
+- **Quality Assurance**: Cross-reference against industry standards
 
-### 1. **只保留 public/favicon.ico，不要在 app 目录下有同名文件或 route**
+### For Participants
+- **Fair Assessment**: Objective evaluation criteria
+- **Detailed Feedback**: Expert-level comments and suggestions
+- **Learning Opportunity**: Understand what makes projects successful
+- **Recognition**: Merit-based scoring and ranking
 
-- **public/favicon.ico**：这是推荐方式，所有浏览器都支持。
-- **不要在 `app/` 目录下有 `app/favicon.ico`、`app/favicon.png`、`app/icon.png`、`app/icon.tsx` 等文件**，否则会和 public 下的 favicon 冲突。
+### For the Community
+- **Innovation Tracking**: Identify emerging trends and technologies
+- **Quality Standards**: Establish benchmarks for hackathon projects
+- **Knowledge Sharing**: Learn from successful project patterns
+- **Ecosystem Growth**: Foster better hackathon experiences
 
-### 2. **删除 app 目录下的 favicon 相关文件**
+## 🔮 Roadmap
 
-## 开发环境登录跳过功能
+### Phase 1: Core Platform ✅
+- [x] Basic AI judging engine
+- [x] GitHub repository analysis
+- [x] Expert AI twins
+- [x] Real-time UI
 
-在本地开发环境中，系统会自动跳过登录验证，方便开发和测试：
+### Phase 2: Advanced Features 🚧
+- [ ] Multi-language support
+- [ ] Advanced code analysis
+- [ ] Video demo evaluation
+- [ ] Team collaboration features
 
-### 支持的环境
-- `localhost`
-- `127.0.0.1`
-- 局域网IP地址（`192.168.*`、`10.*`、`172.*`）
+### Phase 3: Ecosystem Integration 📋
+- [ ] Hackathon platform integrations
+- [ ] API marketplace
+- [ ] Custom evaluation models
+- [ ] Enterprise features
 
-### 功能说明
-- 在支持的本地环境中，用户无需登录即可使用所有功能
-- 系统会自动设置用户邮箱为 `localhost@a42z.dev`
-- 在生产环境中，仍然需要正常的登录流程
+### Phase 4: AI Evolution 🔬
+- [ ] Self-improving algorithms
+- [ ] Domain-specific models
+- [ ] Predictive analytics
+- [ ] Automated insights
 
-### 技术实现
-- 通过 `isLocalhost()` 工具函数检测当前环境
-- 在 `useEffect` 中自动设置登录状态
-- 在 `handleStart` 函数中跳过登录检查
+## 🤝 Contributing
 
-### 3. **metadata 配置可以保留或删除**
+We welcome contributions from the community! Here's how you can help:
 
-- 你可以在 `app/layout.tsx` 的 metadata 里写：
-  ```js
-  icons: {
-    icon: "/favicon.ico"
-  }
-  ```
-- 但只要 public 下有 favicon.ico，Next.js 会自动使用，无需额外配置。
+### Development
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Commit your changes: `git commit -m 'Add amazing feature'`
+4. Push to the branch: `git push origin feature/amazing-feature`
+5. Open a Pull Request
 
-### 4. **重启开发服务器或重新部署**
+### Areas of Contribution
+- **AI Models**: Improve evaluation algorithms
+- **UI/UX**: Enhance user experience
+- **API Integrations**: Add new data sources
+- **Documentation**: Improve guides and examples
+- **Testing**: Add tests and improve coverage
+
+### Code Style
+- Follow TypeScript best practices
+- Use Prettier for code formatting
+- Write meaningful commit messages
+- Add tests for new features
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- **Tech Leaders**: Inspired by the insights of Andrew Ng, Paul Graham, Feifei Li, and Sam Altman
+- **Open Source Community**: Built on the shoulders of amazing open-source projects
+- **Hackathon Community**: For feedback and inspiration
+- **AI Research Community**: For advancing the state of AI evaluation
+
+## 📞 Support
+
+- **Documentation**: [docs.a42z.ai](https://docs.a42z.ai)
+- **Issues**: [GitHub Issues](https://github.com/your-org/a42z-home/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/your-org/a42z-home/discussions)
+- **Email**: support@a42z.ai
+
+## 🌐 Links
+
+- **Website**: [a42z.ai](https://a42z.ai)
+- **Demo**: [judge.a42z.ai](https://judge.a42z.ai)
+- **Documentation**: [docs.a42z.ai](https://docs.a42z.ai)
+- **API Reference**: [api.a42z.ai](https://api.a42z.ai)
 
 ---
 
-## 参考
+**Built with ❤️ for the hackathon community**
 
-- [官方文档：Conflicting public file and page file](https://nextjs.org/docs/messages/conflicting-public-file-page)
-- [App Router favicon 说明](https://nextjs.org/docs/app/api-reference/file-conventions/metadata/app-icons)
-
----
-
-## 总结
-
-- **只保留 public/favicon.ico**
-- **删除 app/ 目录下所有 favicon/icon 相关文件**
-- **重启项目**
-
-这样就不会再有冲突，favicon.ico 会被正确加载。
-
-如需自动检测或批量删除 app 目录下的 icon 文件，请告知！
+*Empowering innovation through intelligent evaluation*

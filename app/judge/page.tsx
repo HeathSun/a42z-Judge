@@ -1204,6 +1204,7 @@ export default function A42zJudgeWorkflow() {
   const [difyAnalysis, setDifyAnalysis] = useState<DifyResponse | null>(null);
   const [isAnalyzingWithDify, setIsAnalyzingWithDify] = useState(false);
   const [webhookStatus, setWebhookStatus] = useState<'idle' | 'configuring' | 'configured' | 'error'>('idle');
+  const [databaseAnalysis, setDatabaseAnalysis] = useState<any>(null);
 
   useEffect(() => {
     setIsClient(true);
@@ -1526,7 +1527,7 @@ export default function A42zJudgeWorkflow() {
 
   const handleFileUpload = async (file: File | string, type: UploadedFile["type"]) => {
     const newFile: UploadedFile = {
-      id: Date.now().toString(),
+      id: Math.random().toString(36).substr(2, 9),
       name: typeof file === "string" ? file : file.name,
       type,
       status: "uploading",
@@ -1554,6 +1555,9 @@ export default function A42zJudgeWorkflow() {
           const analysis = await difyAPI.analyzeGitHubRepo(file)
           setDifyAnalysis(analysis)
           console.log('Dify Analysis Result:', analysis)
+          
+          // 从数据库获取分析结果
+          await fetchAnalysisFromDatabase(file)
         } catch (error) {
           console.error('Dify API Error:', error)
           // 即使Dify API失败，也不影响主流程
@@ -1562,6 +1566,28 @@ export default function A42zJudgeWorkflow() {
         }
       }
     }, 1500)
+  }
+
+  // 从数据库获取分析结果
+  const fetchAnalysisFromDatabase = async (githubUrl: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('judge_comments')
+        .select('*')
+        .eq('github_repo_url', githubUrl)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (error) {
+        console.error('Database fetch error:', error);
+      } else if (data) {
+        setDatabaseAnalysis(data);
+        console.log('Analysis result from database:', data);
+      }
+    } catch (error) {
+      console.error('Error fetching from database:', error);
+    }
   }
 
   const handleStepToggle = (stepId: string) => {
@@ -1614,6 +1640,11 @@ export default function A42zJudgeWorkflow() {
   const getStepContent = (stepId: string): string => {
     switch (stepId) {
       case "technical-research":
+        // 优先显示数据库中的分析结果
+        if (databaseAnalysis?.analysis_result) {
+          return `Database Analysis: ${databaseAnalysis.analysis_result.substring(0, 200)}...`
+        }
+        // 如果没有数据库结果，显示Dify API结果
         if (difyAnalysis?.answer) {
           return `Dify AI Analysis: ${difyAnalysis.answer.substring(0, 200)}...`
         }
