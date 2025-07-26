@@ -1,120 +1,104 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// 存储接收到的数据（用于调试和临时存储）
+// 存储接收到的数据
 const receivedData = new Map<string, Record<string, unknown>>();
+
+export async function GET() {
+  return NextResponse.json({
+    message: 'Paul Analysis API is running',
+    receivedData: Array.from(receivedData.entries())
+  });
+}
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { repo_url, user_id } = body;
+    console.log('Paul Analysis Request:', body);
 
-    console.log('📥 Paul Analysis Request:', {
-      user_id,
-      repo_url,
-      timestamp: new Date().toISOString()
-    });
-
-    // 调用 Dify 聊天机器人
-    const response = await fetch('https://udify.app/chat/vO7bHoEgffAu6YfE', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        inputs: { repo_url },
-        user: user_id || 'anonymous'
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Dify API error: ${response.status}`);
+    // 验证必需字段
+    if (!body.repo_url) {
+      return NextResponse.json(
+        { error: 'repo_url is required' },
+        { status: 400 }
+      );
     }
 
-    const result = await response.json();
+    // 生成唯一ID
+    const requestId = `paul_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     
-    // 生成唯一ID用于存储
-    const dataId = typeof user_id === 'string' ? user_id : `paul_${Date.now()}`;
+    // 存储数据
+    const data = {
+      id: requestId,
+      timestamp: new Date().toISOString(),
+      repo_url: body.repo_url,
+      user_id: body.user_id || 'anonymous',
+      analysis_type: 'paul_graham_perspective',
+      status: 'received'
+    };
     
-    // 存储到内存（用于调试）
-    receivedData.set(dataId, {
-      user_id,
-      repo_url,
-      result,
-      source: 'paul_graham',
-      timestamp: new Date().toISOString()
-    });
+    receivedData.set(requestId, data);
 
     // 返回成功响应
-    return NextResponse.json({ 
-      success: true, 
-      message: 'Paul analysis completed successfully',
-      data: result,
-      data_id: dataId,
-      source: 'paul_graham',
-      timestamp: new Date().toISOString()
+    return NextResponse.json({
+      success: true,
+      message: 'Paul analysis request received successfully',
+      request_id: requestId,
+      data: {
+        repo_url: body.repo_url,
+        analysis_type: 'paul_graham_perspective',
+        status: 'processing'
+      }
     });
 
   } catch (error) {
-    console.error('Paul API Error:', error);
+    console.error('Paul Analysis API Error:', error);
     return NextResponse.json(
-      { 
-        success: false, 
-        error: 'Failed to process Paul analysis',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      },
-      { status: 500 }
+      { error: 'Invalid JSON payload' },
+      { status: 400 }
     );
   }
 }
 
-// GET 端点用于查询接收到的数据
-export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const dataId = searchParams.get('data_id');
-  
-  if (!dataId) {
-    // 返回接口状态信息
+export async function PUT(request: NextRequest) {
+  try {
+    const body = await request.json();
+    console.log('Paul Analysis Update Request:', body);
+
+    if (!body.request_id) {
+      return NextResponse.json(
+        { error: 'request_id is required for updates' },
+        { status: 400 }
+      );
+    }
+
+    const existingData = receivedData.get(body.request_id);
+    if (!existingData) {
+      return NextResponse.json(
+        { error: 'Request not found' },
+        { status: 404 }
+      );
+    }
+
+    // 更新数据
+    const updatedData = {
+      ...existingData,
+      ...body,
+      updated_at: new Date().toISOString()
+    };
+    
+    receivedData.set(body.request_id, updatedData);
+
+    return NextResponse.json({
+      success: true,
+      message: 'Paul analysis request updated successfully',
+      data: updatedData
+    });
+
+  } catch (error) {
+    console.error('Paul Analysis Update Error:', error);
     return NextResponse.json(
-      { 
-        success: true, 
-        message: 'Paul analysis endpoint is ready',
-        available_methods: ['POST', 'GET'],
-        note: 'Use POST to send Paul analysis request, GET with data_id to query results',
-        endpoint: 'https://www.a42z.ai/api/paul'
-      },
-      { status: 200 }
+      { error: 'Invalid JSON payload' },
+      { status: 400 }
     );
   }
-
-  const data = receivedData.get(dataId);
-  
-  if (!data) {
-    return NextResponse.json(
-      { error: 'Data not found' },
-      { status: 404 }
-    );
-  }
-
-  return NextResponse.json({
-    success: true,
-    data: data
-  });
-}
-
-// PUT 端点用于获取所有接收到的数据（用于调试）
-export async function PUT() {
-  const allData = Array.from(receivedData.entries()).map(([id, data]) => ({
-    data_id: id,
-    user_id: data.user_id,
-    repo_url: data.repo_url,
-    source: data.source,
-    timestamp: data.timestamp,
-    has_result: !!data.result
-  }));
-
-  return NextResponse.json({
-    success: true,
-    count: allData.length,
-    data: allData
-  });
 } 
