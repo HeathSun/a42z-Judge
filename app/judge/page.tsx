@@ -1372,6 +1372,7 @@ export default function A42zJudgeWorkflow() {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [isClient, setIsClient] = useState(false);
   const [difyAnalysis, setDifyAnalysis] = useState<DifyResponse | null>(null);
+  const [difyFileId, setDifyFileId] = useState<string | null>(null); // 存储 Dify 的 file_id
   const [isAnalyzingWithDify, setIsAnalyzingWithDify] = useState(false);
   const [webhookStatus, setWebhookStatus] = useState<'idle' | 'configuring' | 'configured' | 'error'>('idle');
   
@@ -1606,13 +1607,6 @@ export default function A42zJudgeWorkflow() {
   const triggerAllJudgeAnalyses = async (githubUrl: string) => {
     const judgeTypes = ['business', 'sam', 'li', 'ng', 'paul', 'summary'];
     
-    // 获取 PDF URL（如果存在）
-    let pdfUrl: string | undefined;
-    const pdfFile = files.find(f => f.type === "pdf" && f.status === "completed");
-    if (pdfFile && userEmail) {
-      pdfUrl = `https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/pdf/${userEmail}.pdf`;
-    }
-    
     for (const judgeType of judgeTypes) {
       try {
         const startTime = new Date();
@@ -1622,8 +1616,8 @@ export default function A42zJudgeWorkflow() {
         
         // 构建输入参数
         const inputs: Record<string, unknown> = { repo_url: githubUrl };
-        if (pdfUrl) {
-          inputs.repo_pdf = pdfUrl;
+        if (difyFileId) {
+          inputs.repo_pdf = difyFileId;
         }
         
         // 初始化执行状态
@@ -1649,22 +1643,22 @@ export default function A42zJudgeWorkflow() {
         let result: DifyResponse;
         switch (judgeType) {
           case 'business':
-            result = await difyAPI.analyzeBusinessPotential(githubUrl, pdfUrl);
+            result = await difyAPI.analyzeBusinessPotential(githubUrl, difyFileId || undefined);
             break;
           case 'sam':
-            result = await difyAPI.getSamAnalysis(githubUrl, pdfUrl);
+            result = await difyAPI.getSamAnalysis(githubUrl, difyFileId || undefined);
             break;
           case 'li':
-            result = await difyAPI.getLiAnalysis(githubUrl, pdfUrl);
+            result = await difyAPI.getLiAnalysis(githubUrl, difyFileId || undefined);
             break;
           case 'ng':
-            result = await difyAPI.getNgAnalysis(githubUrl, pdfUrl);
+            result = await difyAPI.getNgAnalysis(githubUrl, difyFileId || undefined);
             break;
           case 'paul':
-            result = await difyAPI.getPaulAnalysis(githubUrl, pdfUrl);
+            result = await difyAPI.getPaulAnalysis(githubUrl, difyFileId || undefined);
             break;
           case 'summary':
-            result = await difyAPI.getSummaryAnalysis(githubUrl, pdfUrl);
+            result = await difyAPI.getSummaryAnalysis(githubUrl, difyFileId || undefined);
             break;
           default:
             throw new Error(`Unknown judge type: ${judgeType}`);
@@ -1717,6 +1711,19 @@ export default function A42zJudgeWorkflow() {
     setFiles((prev) => [...prev.filter((f) => f.type !== type), newFile])
 
     setTimeout(async () => {
+      // 如果是 PDF 文件，先上传到 Dify 获取 file_id
+      if (type === "pdf" && typeof file === "object") {
+        try {
+          console.log('开始上传 PDF 到 Dify...');
+          const fileId = await difyAPI.uploadFile(file);
+          setDifyFileId(fileId);
+          console.log('PDF 上传到 Dify 成功，file_id:', fileId);
+        } catch (error) {
+          console.error('PDF 上传到 Dify 失败:', error);
+          // 即使 Dify 上传失败，也继续处理文件状态
+        }
+      }
+
       setFiles((prev) => {
         const updatedFiles = prev.map((f) => (f.id === newFile.id ? { ...f, status: "completed" as const } : f));
         if (updatedFiles.filter((f) => f.status === "completed").length === 2) {
@@ -1731,21 +1738,14 @@ export default function A42zJudgeWorkflow() {
           setIsAnalyzingWithDify(true);
           console.log('开始技术同质化分析:', file);
           
-          // 获取 PDF URL（如果存在）
-          let pdfUrl: string | undefined;
-          const pdfFile = files.find(f => f.type === "pdf" && f.status === "completed");
-          if (pdfFile && userEmail) {
-            pdfUrl = `https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/pdf/${userEmail}.pdf`;
-          }
-          
           // 初始化执行状态
           const startTime = new Date();
           const judgeConfig = difyAPI.getJudgeConfig('receive_data');
           
           // 构建输入参数
           const inputs: Record<string, unknown> = { repo_url: file };
-          if (pdfUrl) {
-            inputs.repo_pdf = pdfUrl;
+          if (difyFileId) {
+            inputs.repo_pdf = difyFileId;
           }
           
           const executionStatus: DifyExecutionStatus = {
@@ -1767,7 +1767,7 @@ export default function A42zJudgeWorkflow() {
           setShowExecutionStatus(true);
           
           // 使用新的 Chatflow API 进行技术同质化分析
-          const result = await difyAPI.analyzeTechnicalHomogeneity(file, pdfUrl);
+          const result = await difyAPI.analyzeTechnicalHomogeneity(file, difyFileId || undefined);
           setDifyAnalysis(result);
           console.log('技术同质化分析完成:', result.answer);
           

@@ -80,6 +80,29 @@ class DifyAPI {
     }
   }
 
+  // 上传文件到 Dify 并获取 file_id
+  async uploadFile(file: File): Promise<string> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetch(`${this.baseURL}/files/upload`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.NEXT_PUBLIC_DIFY_API_KEY}`,
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Dify File Upload Error:', errorText);
+      throw new Error(`Dify File Upload Error: ${response.status} - ${errorText}`);
+    }
+
+    const result = await response.json();
+    return result.id; // 返回 file_id
+  }
+
   // 使用 Chatflow API 发送消息到指定的评委
   async sendMessageToJudge(judgeType: string, message: string, inputs?: Record<string, unknown>): Promise<DifyResponse> {
     const judgeConfig = JUDGE_CONFIGS[judgeType];
@@ -112,10 +135,10 @@ class DifyAPI {
   }
 
   // 技术同质化分析 (使用 receive_data 的 API key)
-  async analyzeTechnicalHomogeneity(githubUrl: string, repoPdfUrl?: string): Promise<DifyResponse> {
+  async analyzeTechnicalHomogeneity(githubUrl: string, fileId?: string): Promise<DifyResponse> {
     const inputs: Record<string, unknown> = { repo_url: githubUrl };
-    if (repoPdfUrl) {
-      inputs.repo_pdf = repoPdfUrl;
+    if (fileId) {
+      inputs.repo_pdf = fileId;
     }
     return this.sendMessageToJudge('receive_data', 
       `请分析这个 GitHub 仓库的技术同质化程度：${githubUrl}`, 
@@ -124,15 +147,15 @@ class DifyAPI {
   }
 
   // 商业潜力分析
-  async analyzeBusinessPotential(githubUrl: string, repoPdfUrl?: string): Promise<DifyResponse> {
+  async analyzeBusinessPotential(githubUrl: string, fileId?: string): Promise<DifyResponse> {
     const inputs: Record<string, unknown> = { 
       repo_url: githubUrl,
       project_name: githubUrl.split('/').pop() || 'Unknown Project',
       project_description: `GitHub repository: ${githubUrl}`,
       analysis_type: 'business_potential'
     };
-    if (repoPdfUrl) {
-      inputs.repo_pdf = repoPdfUrl;
+    if (fileId) {
+      inputs.repo_pdf = fileId;
     }
     return this.sendMessageToJudge('business', 
       `请分析这个项目的商业潜力：${githubUrl}`, 
@@ -141,10 +164,10 @@ class DifyAPI {
   }
 
   // Sam Altman 分析
-  async getSamAnalysis(githubUrl: string, repoPdfUrl?: string): Promise<DifyResponse> {
+  async getSamAnalysis(githubUrl: string, fileId?: string): Promise<DifyResponse> {
     const inputs: Record<string, unknown> = { repo_url: githubUrl };
-    if (repoPdfUrl) {
-      inputs.repo_pdf = repoPdfUrl;
+    if (fileId) {
+      inputs.repo_pdf = fileId;
     }
     return this.sendMessageToJudge('sam', 
       `请从 Sam Altman 的角度分析这个项目：${githubUrl}`, 
@@ -153,10 +176,10 @@ class DifyAPI {
   }
 
   // Feifei Li 分析
-  async getLiAnalysis(githubUrl: string, repoPdfUrl?: string): Promise<DifyResponse> {
+  async getLiAnalysis(githubUrl: string, fileId?: string): Promise<DifyResponse> {
     const inputs: Record<string, unknown> = { repo_url: githubUrl };
-    if (repoPdfUrl) {
-      inputs.repo_pdf = repoPdfUrl;
+    if (fileId) {
+      inputs.repo_pdf = fileId;
     }
     return this.sendMessageToJudge('li', 
       `请从 Feifei Li 的角度分析这个项目：${githubUrl}`, 
@@ -165,10 +188,10 @@ class DifyAPI {
   }
 
   // Andrew Ng 分析
-  async getNgAnalysis(githubUrl: string, repoPdfUrl?: string): Promise<DifyResponse> {
+  async getNgAnalysis(githubUrl: string, fileId?: string): Promise<DifyResponse> {
     const inputs: Record<string, unknown> = { repo_url: githubUrl };
-    if (repoPdfUrl) {
-      inputs.repo_pdf = repoPdfUrl;
+    if (fileId) {
+      inputs.repo_pdf = fileId;
     }
     return this.sendMessageToJudge('ng', 
       `请从 Andrew Ng 的角度分析这个项目：${githubUrl}`, 
@@ -177,10 +200,10 @@ class DifyAPI {
   }
 
   // Paul Graham 分析
-  async getPaulAnalysis(githubUrl: string, repoPdfUrl?: string): Promise<DifyResponse> {
+  async getPaulAnalysis(githubUrl: string, fileId?: string): Promise<DifyResponse> {
     const inputs: Record<string, unknown> = { repo_url: githubUrl };
-    if (repoPdfUrl) {
-      inputs.repo_pdf = repoPdfUrl;
+    if (fileId) {
+      inputs.repo_pdf = fileId;
     }
     return this.sendMessageToJudge('paul', 
       `请从 Paul Graham 的角度分析这个项目：${githubUrl}`, 
@@ -189,10 +212,10 @@ class DifyAPI {
   }
 
   // 综合分析总结
-  async getSummaryAnalysis(githubUrl: string, repoPdfUrl?: string): Promise<DifyResponse> {
+  async getSummaryAnalysis(githubUrl: string, fileId?: string): Promise<DifyResponse> {
     const inputs: Record<string, unknown> = { repo_url: githubUrl };
-    if (repoPdfUrl) {
-      inputs.repo_pdf = repoPdfUrl;
+    if (fileId) {
+      inputs.repo_pdf = fileId;
     }
     return this.sendMessageToJudge('summary', 
       `请对这个项目进行综合分析总结：${githubUrl}`, 
