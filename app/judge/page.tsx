@@ -60,7 +60,7 @@ interface DifyExecutionStatus {
 interface UploadedFile {
   id: string
   name: string
-  type: "pdf" | "github"
+  type: "github"
   status: "uploading" | "completed" | "error"
 }
 
@@ -1063,42 +1063,6 @@ function FileUploadSection({
   onFileUpload: (file: File | string, type: UploadedFile["type"]) => void
 }) {
   const [showGitHubModal, setShowGitHubModal] = useState(false)
-  const fileInputRefs = {
-    pdf: useRef<HTMLInputElement>(null),
-  }
-
-  const uploadTypes = [
-    { type: "pdf" as const, label: "Pitch Deck PDF", icon: FileText, required: true },
-    { type: "github" as const, label: "GitHub Repo", icon: Github, required: true },
-  ]
-
-  const handleFileSelect = (type: UploadedFile["type"]) => {
-    if (type === "github") {
-      setShowGitHubModal(true)
-    } else {
-      fileInputRefs[type].current?.click()
-    }
-  }
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: UploadedFile["type"]) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      // 验证文件类型
-      if (type === "pdf" && file.type !== "application/pdf") {
-        alert("Please select a valid PDF file.");
-        return;
-      }
-      
-      // 验证文件大小（限制为 50MB）
-      const maxSize = 50 * 1024 * 1024; // 50MB
-      if (file.size > maxSize) {
-        alert("File size must be less than 50MB.");
-        return;
-      }
-      
-      onFileUpload(file, type)
-    }
-  }
 
   const handleGitHubLinkSave = (link: string) => {
     // 直接传递GitHub链接字符串
@@ -1107,51 +1071,35 @@ function FileUploadSection({
 
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {uploadTypes.map(({ type, label, icon: Icon, required }) => {
-          const uploadedFile = files.find((f) => f.type === type)
-
-          return (
-            <div key={type} className="relative">
-              {type === "pdf" && (
-                <input
-                  ref={fileInputRefs[type]}
-                  type="file"
-                  onChange={(e) => handleFileChange(e, type)}
-                  className="hidden"
-                  accept=".pdf"
-                />
-              )}
-
-              <ShimmerButton
-                borderRadius="0.25rem"
-                onClick={() => handleFileSelect(type)}
-                className={`w-full p-4 rounded-lg border-2 border-dashed transition-all min-w-0 ${
-                  uploadedFile
-                    ? "border-green-400/50 bg-green-400/10"
-                    : "border-white/20 hover:border-white/40 bg-zinc-800/30 hover:bg-zinc-700/30"
-                }`}
-              >
-                <div className="flex flex-col items-center gap-2 w-full min-w-0">
-                  <Icon className={`w-6 h-6 ${uploadedFile ? "text-green-400" : "text-zinc-400"}`} />
-                  <div className="text-center w-full">
-                    <div className={`font-medium ${uploadedFile ? "text-green-300" : "text-zinc-300"} max-w-full truncate`}>
-                      {uploadedFile ? uploadedFile.name : label}
-                      {required && <span className="text-red-400 ml-1">*</span>}
-                    </div>
-                    {uploadedFile && (
-                      <div className="text-xs text-zinc-400 mt-1 max-w-full truncate">
-                        {uploadedFile.status === "uploading" && "Uploading..."}
-                        {uploadedFile.status === "completed" && "Uploaded successfully"}
-                        {uploadedFile.status === "error" && "Upload failed"}
-                      </div>
-                    )}
-                  </div>
+      <div className="grid grid-cols-1 gap-4">
+        <div className="relative">
+          <ShimmerButton
+            borderRadius="0.25rem"
+            onClick={() => setShowGitHubModal(true)}
+            className={`w-full p-4 rounded-lg border-2 border-dashed transition-all min-w-0 ${
+              files.find(f => f.type === "github")
+                ? "border-green-400/50 bg-green-400/10"
+                : "border-white/20 hover:border-white/40 bg-zinc-800/30 hover:bg-zinc-700/30"
+            }`}
+          >
+            <div className="flex flex-col items-center gap-2 w-full min-w-0">
+              <Github className={`w-6 h-6 ${files.find(f => f.type === "github") ? "text-green-400" : "text-zinc-400"}`} />
+              <div className="text-center w-full">
+                <div className={`font-medium ${files.find(f => f.type === "github") ? "text-green-300" : "text-zinc-300"} max-w-full truncate`}>
+                  {files.find(f => f.type === "github")?.name || "GitHub Repository"}
+                  <span className="text-red-400 ml-1">*</span>
                 </div>
-              </ShimmerButton>
+                {files.find(f => f.type === "github") && (
+                  <div className="text-xs text-zinc-400 mt-1 max-w-full truncate">
+                    {files.find(f => f.type === "github")?.status === "uploading" && "Uploading..."}
+                    {files.find(f => f.type === "github")?.status === "completed" && "Uploaded successfully"}
+                    {files.find(f => f.type === "github")?.status === "error" && "Upload failed"}
+                  </div>
+                )}
+              </div>
             </div>
-          )
-        })}
+          </ShimmerButton>
+        </div>
       </div>
 
       <GitHubLinkModal
@@ -1372,7 +1320,6 @@ export default function A42zJudgeWorkflow() {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [isClient, setIsClient] = useState(false);
   const [difyAnalysis, setDifyAnalysis] = useState<DifyResponse | null>(null);
-  const [difyFileId, setDifyFileId] = useState<string | null>(null); // 存储 Dify 的 file_id
   const [isAnalyzingWithDify, setIsAnalyzingWithDify] = useState(false);
   const [webhookStatus, setWebhookStatus] = useState<'idle' | 'configuring' | 'configured' | 'error'>('idle');
   
@@ -1605,7 +1552,7 @@ export default function A42zJudgeWorkflow() {
 
   // 手动触发所有评委分析的测试函数
   const triggerAllJudgeAnalyses = async (githubUrl: string) => {
-    const judgeTypes = ['business', 'sam', 'li', 'ng', 'paul', 'summary'];
+    const judgeTypes = ['business', 'sam', 'li', 'ng', 'paul'];
     
     for (const judgeType of judgeTypes) {
       try {
@@ -1616,9 +1563,6 @@ export default function A42zJudgeWorkflow() {
         
         // 构建输入参数
         const inputs: Record<string, unknown> = { repo_url: githubUrl };
-        if (difyFileId) {
-          inputs.repo_pdf = difyFileId;
-        }
         
         // 初始化执行状态
         const executionStatus: DifyExecutionStatus = {
@@ -1643,22 +1587,19 @@ export default function A42zJudgeWorkflow() {
         let result: DifyResponse;
         switch (judgeType) {
           case 'business':
-            result = await difyAPI.analyzeBusinessPotential(githubUrl, difyFileId || undefined);
+            result = await difyAPI.analyzeBusinessPotential(githubUrl);
             break;
           case 'sam':
-            result = await difyAPI.getSamAnalysis(githubUrl, difyFileId || undefined);
+            result = await difyAPI.getSamAnalysis(githubUrl);
             break;
           case 'li':
-            result = await difyAPI.getLiAnalysis(githubUrl, difyFileId || undefined);
+            result = await difyAPI.getLiAnalysis(githubUrl);
             break;
           case 'ng':
-            result = await difyAPI.getNgAnalysis(githubUrl, difyFileId || undefined);
+            result = await difyAPI.getNgAnalysis(githubUrl);
             break;
           case 'paul':
-            result = await difyAPI.getPaulAnalysis(githubUrl, difyFileId || undefined);
-            break;
-          case 'summary':
-            result = await difyAPI.getSummaryAnalysis(githubUrl, difyFileId || undefined);
+            result = await difyAPI.getPaulAnalysis(githubUrl);
             break;
           default:
             throw new Error(`Unknown judge type: ${judgeType}`);
@@ -1711,22 +1652,9 @@ export default function A42zJudgeWorkflow() {
     setFiles((prev) => [...prev.filter((f) => f.type !== type), newFile])
 
     setTimeout(async () => {
-      // 如果是 PDF 文件，先上传到 Dify 获取 file_id
-      if (type === "pdf" && typeof file === "object") {
-        try {
-          console.log('开始上传 PDF 到 Dify...');
-          const fileId = await difyAPI.uploadFile(file);
-          setDifyFileId(fileId);
-          console.log('PDF 上传到 Dify 成功，file_id:', fileId);
-        } catch (error) {
-          console.error('PDF 上传到 Dify 失败:', error);
-          // 即使 Dify 上传失败，也继续处理文件状态
-        }
-      }
-
       setFiles((prev) => {
         const updatedFiles = prev.map((f) => (f.id === newFile.id ? { ...f, status: "completed" as const } : f));
-        if (updatedFiles.filter((f) => f.status === "completed").length === 2) {
+        if (updatedFiles.filter((f) => f.status === "completed").length === 1) {
           setTimeout(() => continueWorkflow(), 1000);
         }
         return updatedFiles;
@@ -1742,12 +1670,6 @@ export default function A42zJudgeWorkflow() {
           const startTime = new Date();
           const judgeConfig = difyAPI.getJudgeConfig('receive_data');
           
-          // 构建输入参数
-          const inputs: Record<string, unknown> = { repo_url: file };
-          if (difyFileId) {
-            inputs.repo_pdf = difyFileId;
-          }
-          
           const executionStatus: DifyExecutionStatus = {
             judgeType: 'receive_data',
             judgeName: judgeConfig?.name || 'Technical Analysis',
@@ -1755,7 +1677,7 @@ export default function A42zJudgeWorkflow() {
             startTime,
             requestData: {
               message: `请分析这个 GitHub 仓库的技术同质化程度：${file}`,
-              inputs,
+              inputs: { repo_url: file },
               apiKey: judgeConfig?.apiKey || ''
             }
           };
@@ -1767,7 +1689,7 @@ export default function A42zJudgeWorkflow() {
           setShowExecutionStatus(true);
           
           // 使用新的 Chatflow API 进行技术同质化分析
-          const result = await difyAPI.analyzeTechnicalHomogeneity(file, difyFileId || undefined);
+          const result = await difyAPI.analyzeTechnicalHomogeneity(file);
           setDifyAnalysis(result);
           console.log('技术同质化分析完成:', result.answer);
           
@@ -1811,39 +1733,8 @@ export default function A42zJudgeWorkflow() {
           setIsAnalyzingWithDify(false);
         }
       }
-
-      // 上传PDF文件到Supabase Storage
-      if (type === "pdf" && typeof file === "object" && userEmail) {
-        try {
-          // 使用用户邮箱作为文件名
-          const fileName = `${userEmail}.pdf`;
-          
-          const { data, error } = await supabase.storage
-            .from('pdf')
-            .upload(fileName, file, {
-              upsert: true, // 如果文件已存在则覆盖
-              contentType: 'application/pdf'
-            });
-
-          if (error) {
-            console.error('PDF upload error:', error);
-          } else {
-            console.log('PDF uploaded successfully:', data.path);
-            // 获取公共URL
-            const { data: urlData } = supabase.storage
-              .from('pdf')
-              .getPublicUrl(fileName);
-            console.log('PDF public URL:', urlData.publicUrl);
-            
-            // TODO: 这里可以添加PDF分析逻辑，调用相应的Dify Chatflow API
-            // 例如：await difyAPI.sendMessageToJudge('pdf_analyzer', '分析PDF内容', { pdf_url: urlData.publicUrl });
-          }
-        } catch (error) {
-          console.error('PDF upload error:', error);
-        }
-      }
-    }, 1500)
-  }
+    }, 2000);
+  };
 
   const handleStepToggle = (stepId: string) => {
     setWorkflowSteps((prev) =>
@@ -1902,8 +1793,6 @@ export default function A42zJudgeWorkflow() {
     switch (stepId) {
       case "keywords":
         return "Project description analyzed successfully. Your detailed description will be used for comprehensive evaluation.";
-      case "upload":
-        return "Documents uploaded and processed successfully.";
       default:
         return "Processing completed successfully.";
     }

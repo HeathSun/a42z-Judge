@@ -47,12 +47,6 @@ const apiEndpoints: ApiEndpoint[] = [
     path: '/api/sam',
     description: 'Sam Altman 分析',
     color: 'bg-indigo-600 hover:bg-indigo-700'
-  },
-  {
-    name: 'Summary Analysis',
-    path: '/api/summary',
-    description: '综合分析总结',
-    color: 'bg-teal-600 hover:bg-teal-700'
   }
 ];
 

@@ -25,40 +25,35 @@ interface JudgeConfig {
 }
 
 const JUDGE_CONFIGS: Record<string, JudgeConfig> = {
-  summary: {
-    name: 'Summary',
-    apiKey: 'app-QpOXxX44VNrttLlryhEz8P3v',
-    description: '综合分析总结'
-  },
-  sam: {
-    name: 'Sam Altman',
-    apiKey: 'app-69wonwSInJYTocYMba4OhuYo',
-    description: 'Sam Altman 分析'
-  },
-  li: {
-    name: 'Feifei Li',
-    apiKey: 'app-4hLOcPEUppVshp6ErJnD8JSX',
-    description: 'Feifei Li 分析'
-  },
-  ng: {
-    name: 'Andrew Ng',
-    apiKey: 'app-sorlsRwypHu0Fh67fXw47ZtV',
-    description: 'Andrew Ng 分析'
-  },
-  paul: {
-    name: 'Paul Graham',
-    apiKey: 'app-1wc2KIN2OnhqxQYmDsIGgMXR',
-    description: 'Paul Graham 分析'
+  receive_data: {
+    name: 'Technical Analysis',
+    apiKey: 'app-dhIC2LKWiF6txqsziyaAPvQy',
+    description: '技术同质化分析'
   },
   business: {
     name: 'Business Analysis',
     apiKey: 'app-TNEgFjsjZlRSVLaMFtBOOMlr',
     description: '商业潜力分析'
   },
-  receive_data: {
-    name: 'Receive Data',
-    apiKey: 'app-dhIC2LKWiF6txqsziyaAPvQy',
-    description: '数据接收'
+  sam: {
+    name: 'Sam Altman',
+    apiKey: 'app-69wonwSInJYTocYMba4OhuYo',
+    description: 'Sam Altman 视角分析'
+  },
+  li: {
+    name: 'Feifei Li',
+    apiKey: 'app-4hLOcPEUppVshp6ErJnD8JSX',
+    description: 'Feifei Li 视角分析'
+  },
+  ng: {
+    name: 'Andrew Ng',
+    apiKey: 'app-sorlsRwypHu0Fh67fXw47ZtV',
+    description: 'Andrew Ng 视角分析'
+  },
+  paul: {
+    name: 'Paul Graham',
+    apiKey: 'app-1wc2KINOnhqxQYmDsIGgMXR',
+    description: 'Paul Graham 视角分析'
   }
 };
 
@@ -78,29 +73,6 @@ class DifyAPI {
       console.error('Failed to configure Dify webhook:', error);
       return false;
     }
-  }
-
-  // 上传文件到 Dify 并获取 file_id
-  async uploadFile(file: File): Promise<string> {
-    const formData = new FormData();
-    formData.append('file', file);
-
-    const response = await fetch(`${this.baseURL}/files/upload`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.NEXT_PUBLIC_DIFY_API_KEY}`,
-      },
-      body: formData,
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Dify File Upload Error:', errorText);
-      throw new Error(`Dify File Upload Error: ${response.status} - ${errorText}`);
-    }
-
-    const result = await response.json();
-    return result.id; // 返回 file_id
   }
 
   // 使用 Chatflow API 发送消息到指定的评委
@@ -135,28 +107,21 @@ class DifyAPI {
   }
 
   // 技术同质化分析 (使用 receive_data 的 API key)
-  async analyzeTechnicalHomogeneity(githubUrl: string, fileId?: string): Promise<DifyResponse> {
-    const inputs: Record<string, unknown> = { repo_url: githubUrl };
-    if (fileId) {
-      inputs.repo_pdf = fileId;
-    }
+  async analyzeTechnicalHomogeneity(githubUrl: string): Promise<DifyResponse> {
     return this.sendMessageToJudge('receive_data', 
       `请分析这个 GitHub 仓库的技术同质化程度：${githubUrl}`, 
-      inputs
+      { repo_url: githubUrl }
     );
   }
 
   // 商业潜力分析
-  async analyzeBusinessPotential(githubUrl: string, fileId?: string): Promise<DifyResponse> {
+  async analyzeBusinessPotential(githubUrl: string): Promise<DifyResponse> {
     const inputs: Record<string, unknown> = { 
       repo_url: githubUrl,
       project_name: githubUrl.split('/').pop() || 'Unknown Project',
       project_description: `GitHub repository: ${githubUrl}`,
       analysis_type: 'business_potential'
     };
-    if (fileId) {
-      inputs.repo_pdf = fileId;
-    }
     return this.sendMessageToJudge('business', 
       `请分析这个项目的商业潜力：${githubUrl}`, 
       inputs
@@ -164,62 +129,34 @@ class DifyAPI {
   }
 
   // Sam Altman 分析
-  async getSamAnalysis(githubUrl: string, fileId?: string): Promise<DifyResponse> {
-    const inputs: Record<string, unknown> = { repo_url: githubUrl };
-    if (fileId) {
-      inputs.repo_pdf = fileId;
-    }
+  async getSamAnalysis(githubUrl: string): Promise<DifyResponse> {
     return this.sendMessageToJudge('sam', 
       `请从 Sam Altman 的角度分析这个项目：${githubUrl}`, 
-      inputs
+      { repo_url: githubUrl }
     );
   }
 
   // Feifei Li 分析
-  async getLiAnalysis(githubUrl: string, fileId?: string): Promise<DifyResponse> {
-    const inputs: Record<string, unknown> = { repo_url: githubUrl };
-    if (fileId) {
-      inputs.repo_pdf = fileId;
-    }
+  async getLiAnalysis(githubUrl: string): Promise<DifyResponse> {
     return this.sendMessageToJudge('li', 
       `请从 Feifei Li 的角度分析这个项目：${githubUrl}`, 
-      inputs
+      { repo_url: githubUrl }
     );
   }
 
   // Andrew Ng 分析
-  async getNgAnalysis(githubUrl: string, fileId?: string): Promise<DifyResponse> {
-    const inputs: Record<string, unknown> = { repo_url: githubUrl };
-    if (fileId) {
-      inputs.repo_pdf = fileId;
-    }
+  async getNgAnalysis(githubUrl: string): Promise<DifyResponse> {
     return this.sendMessageToJudge('ng', 
       `请从 Andrew Ng 的角度分析这个项目：${githubUrl}`, 
-      inputs
+      { repo_url: githubUrl }
     );
   }
 
   // Paul Graham 分析
-  async getPaulAnalysis(githubUrl: string, fileId?: string): Promise<DifyResponse> {
-    const inputs: Record<string, unknown> = { repo_url: githubUrl };
-    if (fileId) {
-      inputs.repo_pdf = fileId;
-    }
+  async getPaulAnalysis(githubUrl: string): Promise<DifyResponse> {
     return this.sendMessageToJudge('paul', 
       `请从 Paul Graham 的角度分析这个项目：${githubUrl}`, 
-      inputs
-    );
-  }
-
-  // 综合分析总结
-  async getSummaryAnalysis(githubUrl: string, fileId?: string): Promise<DifyResponse> {
-    const inputs: Record<string, unknown> = { repo_url: githubUrl };
-    if (fileId) {
-      inputs.repo_pdf = fileId;
-    }
-    return this.sendMessageToJudge('summary', 
-      `请对这个项目进行综合分析总结：${githubUrl}`, 
-      inputs
+      { repo_url: githubUrl }
     );
   }
 
