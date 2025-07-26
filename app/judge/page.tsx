@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from "react"
 
 import { motion, AnimatePresence } from "framer-motion"
-import { ChevronRight, Upload, Github, FileText, X, Plus, ExternalLink, Loader2, Send } from "lucide-react"
+import { ChevronRight, Upload, Github, FileText, X, Plus, ExternalLink, Loader2 } from "lucide-react"
 import { ShimmerButton } from "@/components/magicui/shimmer-button";
 import { ShinyButton } from "@/components/magicui/shiny-button";
 import { FlickeringGrid } from "@/components/magicui/flickering-grid";
@@ -415,7 +415,6 @@ export default function A42zJudgeWorkflow() {
   const [loginError, setLoginError] = useState("");
   const [loginFading, setLoginFading] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
-  const [projectName, setProjectName] = useState<string>("");
 
   useEffect(() => {
     let ticking = false;
@@ -485,16 +484,6 @@ export default function A42zJudgeWorkflow() {
   }, []);
 
   // Initialize workflow steps
-  // Load project name from cache on mount
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const cachedProjectName = localStorage.getItem('a42z_project_name');
-      if (cachedProjectName) {
-        setProjectName(cachedProjectName);
-      }
-    }
-  }, []);
-
   useEffect(() => {
     const steps: WorkflowStep[] = [
       {
@@ -569,13 +558,6 @@ export default function A42zJudgeWorkflow() {
       return;
     }
     if (!projectDescription.trim()) return
-
-    // Save project name to browser cache
-    const projectNameToSave = projectDescription.trim();
-    setProjectName(projectNameToSave);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('a42z_project_name', projectNameToSave);
-    }
 
     setIsStarted(true)
 
@@ -781,70 +763,38 @@ export default function A42zJudgeWorkflow() {
 
           {/* Main Content */}
           <div className="max-w-4xl mx-auto space-y-6">
-            {/* Input Section - Initial */}
+            {/* Input Section */}
             {!isStarted && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="backdrop-blur-md rounded-lg p-6 border border-white/20 shadow-lg bg-[rgba(24,24,27,0.7)]"
               >
-                <div className="relative">
-                  <div className="flex items-center">
+                <div className="space-y-4">
+                  <div>
                     <input
                       type="text"
                       value={projectDescription}
                       onChange={(e) => setProjectDescription(e.target.value)}
-                      onKeyDown={(e) => e.key === "Enter" && handleStart()}
                       placeholder="Describe your project in 1 sentence"
-                      className="w-full px-4 py-3 pr-12 bg-zinc-900/50 text-white rounded-lg border border-white/20 focus:outline-none focus:ring-2 focus:ring-white-50 placeholder-zinc-500"
+                      className="w-full px-4 py-3 bg-zinc-900/50 text-white rounded-lg border border-white/20 focus:outline-none focus:ring-2 focus:ring-white-50 placeholder-zinc-500"
                     />
-                    <button
-                      onClick={handleStart}
-                      disabled={!projectDescription.trim()}
-                      className="absolute right-2 p-2 text-white hover:text-white-300 disabled:text-zinc-600 disabled:cursor-not-allowed transition-colors"
-                    >
-                      <Send className="w-5 h-5" />
-                    </button>
                   </div>
-                </div>
-              </motion.div>
-            )}
-
-            {/* Input Section - Bottom (when started) */}
-            {isStarted && (
-              <motion.div
-                initial={{ opacity: 0, y: 100 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, ease: "easeOut" }}
-                className="fixed bottom-8 left-1/2 transform -translate-x-1/2 w-full max-w-2xl px-4 z-40"
-              >
-                <div className="backdrop-blur-md rounded-lg p-4 border border-white/20 shadow-lg bg-[rgba(24,24,27,0.9)]">
-                  <div className="relative">
-                    <div className="flex items-center">
-                      <input
-                        type="text"
-                        value={projectDescription}
-                        onChange={(e) => setProjectDescription(e.target.value)}
-                        onKeyDown={(e) => e.key === "Enter" && handleStart()}
-                        placeholder="Continue with your project analysis..."
-                        className="w-full px-4 py-3 pr-12 bg-zinc-900/50 text-white rounded-lg border border-white/20 focus:outline-none focus:ring-2 focus:ring-white-50 placeholder-zinc-500"
-                      />
-                      <button
-                        onClick={handleStart}
-                        disabled={!projectDescription.trim()}
-                        className="absolute right-2 p-2 text-white hover:text-white-300 disabled:text-zinc-600 disabled:cursor-not-allowed transition-colors"
-                      >
-                        <Send className="w-5 h-5" />
-                      </button>
-                    </div>
-                  </div>
+                  <ShimmerButton
+                    borderRadius="0.25rem"
+                    onClick={handleStart}
+                    disabled={!projectDescription.trim()}
+                    className="w-full py-3 bg-white-600 hover:bg-white-700 disabled:bg-zinc-700 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors"
+                  >
+                    Start Analysis
+                  </ShimmerButton>
                 </div>
               </motion.div>
             )}
 
             {/* Workflow Steps */}
             {isStarted && (
-              <div className="space-y-4 pb-32">
+              <div className="space-y-4">
                 {/* Keywords Section */}
                 {keywords.length > 0 && (
                   <motion.div
