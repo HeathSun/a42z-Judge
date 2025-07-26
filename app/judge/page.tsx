@@ -1560,59 +1560,29 @@ export default function A42zJudgeWorkflow() {
 
     setFiles((prev) => [...prev.filter((f) => f.type !== type), newFile])
 
-    // Simulate upload
     setTimeout(async () => {
       setFiles((prev) => {
         const updatedFiles = prev.map((f) => (f.id === newFile.id ? { ...f, status: "completed" as const } : f));
-        
-        // 如果所有必需的文件都上传完成，自动开始分析
         if (updatedFiles.filter((f) => f.status === "completed").length === 2) {
           setTimeout(() => continueWorkflow(), 1000);
         }
-        
         return updatedFiles;
       });
 
-      // 如果是GitHub仓库，调用Dify API进行分析
+      // 上传github url时直接调用dify workflow
       if (type === "github" && typeof file === "string") {
         try {
-          setIsAnalyzingWithDify(true)
-          const analysis = await difyAPI.analyzeGitHubRepo(file)
-          setDifyAnalysis(analysis)
-          console.log('Dify Analysis Result:', analysis)
-          
-          // 从数据库获取分析结果
-          await fetchAnalysisFromDatabase(file)
+          setIsAnalyzingWithDify(true);
+          const result = await difyAPI.triggerWorkflowWithRepoUrl(file);
+          setDifyAnalysis(result); // result.answer 就是分析结果
         } catch (error) {
-          console.error('Dify API Error:', error)
-          // 即使Dify API失败，也不影响主流程
+          // 错误处理
+          console.error('Dify API Error:', error);
         } finally {
-          setIsAnalyzingWithDify(false)
+          setIsAnalyzingWithDify(false);
         }
       }
     }, 1500)
-  }
-
-  // 从数据库获取分析结果
-  const fetchAnalysisFromDatabase = async (githubUrl: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('judge_comments')
-        .select('*')
-        .eq('github_repo_url', githubUrl)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
-
-      if (error) {
-        console.error('Database fetch error:', error);
-      } else if (data) {
-        setDatabaseAnalysis(data);
-        console.log('Analysis result from database:', data);
-      }
-    } catch (error) {
-      console.error('Error fetching from database:', error);
-    }
   }
 
   const handleStepToggle = (stepId: string) => {
@@ -1664,31 +1634,26 @@ export default function A42zJudgeWorkflow() {
 
 
   const getStepContent = (stepId: string): string => {
+    if (stepId === "technical-research") {
+      if (difyAnalysis?.answer) return difyAnalysis.answer;
+      return "Waiting for Dify analysis...";
+    }
+    // 其他步骤...
     switch (stepId) {
-      case "technical-research":
-        // 优先显示Dify API结果
-        if (difyAnalysis?.answer) {
-          return `Dify AI Analysis: ${difyAnalysis.answer}`
-        }
-        // 如果没有Dify结果，显示数据库中的分析结果
-        if (databaseAnalysis?.analysis_result) {
-          return `Database Analysis: ${databaseAnalysis.analysis_result}`
-        }
-        return "Discovered 23 similar technical implementations across GitHub and GitLab. Identified common architectural patterns and technology stacks in healthcare AI projects."
       case "code-quality-research":
-        return "Code quality analysis completed. Maintainability Index: 85/100, Test Coverage: 78%, Security Score: 92/100, Performance Grade: A-, Code Complexity: Low, Documentation Quality: Excellent. Overall Code Quality: 8.7/10. Identified 3 minor security vulnerabilities and 5 optimization opportunities."
+        return "Code quality analysis completed. Maintainability Index: 85/100, Test Coverage: 78%, Security Score: 92/100, Performance Grade: A-, Code Complexity: Low, Documentation Quality: Excellent. Overall Code Quality: 8.7/10. Identified 3 minor security vulnerabilities and 5 optimization opportunities.";
       case "business-research":
-        return "Business potential analysis completed. Found 15 related startups in healthcare AI space. Y Combinator portfolio shows 8 similar companies with average $12M funding. Crunchbase data indicates $2.3B total funding in Q4 2024. TechCrunch reports 23 new healthcare AI startups launched this quarter. Market opportunity: $45B by 2027."
+        return "Business potential analysis completed. Found 15 related startups in healthcare AI space. Y Combinator portfolio shows 8 similar companies with average $12M funding. Crunchbase data indicates $2.3B total funding in Q4 2024. TechCrunch reports 23 new healthcare AI startups launched this quarter. Market opportunity: $45B by 2027.";
       case "hackathon-research":
-        return "Analyzed 47 similar hackathon projects. Common patterns include mobile-first approach and real-time processing capabilities."
+        return "Analyzed 47 similar hackathon projects. Common patterns include mobile-first approach and real-time processing capabilities.";
       case "ai-analysis":
-        return "Comprehensive analysis completed. Technical feasibility: High. Market potential: Strong. Innovation score: 8.2/10."
+        return "Comprehensive analysis completed. Technical feasibility: High. Market potential: Strong. Innovation score: 8.2/10.";
       case "scoring":
-        return "Technical Implementation: 85/100, Innovation: 82/100, Market Potential: 78/100, Presentation: 88/100. Overall Score: 83.25/100"
+        return "Technical Implementation: 85/100, Innovation: 82/100, Market Potential: 78/100, Presentation: 88/100. Overall Score: 83.25/100";
       case "debate":
-        return "Carbon Panel debate completed after 3 rounds. Consensus reached on project strengths and improvement areas."
+        return "Carbon Panel debate completed after 3 rounds. Consensus reached on project strengths and improvement areas.";
       default:
-        return "Processing completed successfully."
+        return "Processing completed successfully.";
     }
   }
 
