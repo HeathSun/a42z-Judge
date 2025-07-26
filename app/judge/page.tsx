@@ -1078,6 +1078,19 @@ function FileUploadSection({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: UploadedFile["type"]) => {
     const file = e.target.files?.[0]
     if (file) {
+      // 验证文件类型
+      if (type === "pdf" && file.type !== "application/pdf") {
+        alert("Please select a valid PDF file.");
+        return;
+      }
+      
+      // 验证文件大小（限制为 50MB）
+      const maxSize = 50 * 1024 * 1024; // 50MB
+      if (file.size > maxSize) {
+        alert("File size must be less than 50MB.");
+        return;
+      }
+      
       onFileUpload(file, type)
     }
   }
@@ -1588,6 +1601,34 @@ export default function A42zJudgeWorkflow() {
           console.error('Dify API Error:', error);
         } finally {
           setIsAnalyzingWithDify(false);
+        }
+      }
+
+      // 上传PDF文件到Supabase Storage
+      if (type === "pdf" && typeof file === "object" && userEmail) {
+        try {
+          // 使用用户邮箱作为文件名
+          const fileName = `${userEmail}.pdf`;
+          
+          const { data, error } = await supabase.storage
+            .from('pdf')
+            .upload(fileName, file, {
+              upsert: true, // 如果文件已存在则覆盖
+              contentType: 'application/pdf'
+            });
+
+          if (error) {
+            console.error('PDF upload error:', error);
+          } else {
+            console.log('PDF uploaded successfully:', data.path);
+            // 获取公共URL
+            const { data: urlData } = supabase.storage
+              .from('pdf')
+              .getPublicUrl(fileName);
+            console.log('PDF public URL:', urlData.publicUrl);
+          }
+        } catch (error) {
+          console.error('PDF upload error:', error);
         }
       }
     }, 1500)
