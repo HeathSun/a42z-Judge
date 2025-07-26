@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
   try {
     const body: DifyWebhookEvent = await request.json();
     
-    console.log('Dify Webhook Received:', {
+    console.log('📥 Dify Webhook Received:', {
       event: body.event,
       conversation_id: body.conversation_id,
       message_id: body.message_id,
@@ -107,11 +107,12 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Webhook processing error:', error);
+    console.error('❌ Webhook processing error:', error);
     return NextResponse.json(
       { 
         success: false, 
-        error: 'Failed to process webhook' 
+        error: 'Failed to process webhook',
+        details: error instanceof Error ? error.message : 'Unknown error'
       },
       { status: 500 }
     );
