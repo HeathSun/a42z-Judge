@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { motion } from "motion/react";
 import { useEffect, useState } from "react";
 import { TypingAnimation } from "./typing-animation";
+import { AnswerDisplay } from "./answer-display";
 import { 
   Search, 
   Code, 
@@ -319,6 +320,16 @@ export function DifyAnalysisDisplay({
               >
                 {displayedAnalysis.summary || "Analysis completed successfully. The repository has been thoroughly evaluated for technical homogeneity and compared with similar projects in the ecosystem."}
               </TypingAnimation>
+            </div>
+
+            {/* 完整答案显示 */}
+            <div className="bg-white/5 p-4 rounded-lg border border-white/10">
+              <h4 className="text-white font-medium mb-3">Full Analysis</h4>
+              <AnswerDisplay 
+                answer={analysisData.answer}
+                judgeName="Technical Homogeneity Analyzer"
+                isVisible={true}
+              />
             </div>
 
             {/* 相似项目评分 */}

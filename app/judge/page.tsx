@@ -633,7 +633,7 @@ function TerminalSteps({ steps, isVisible, stepType = "business-research" }: { s
                 title={apiCall.title} 
                 description={apiCall.description}
                 status={hasCompleted ? "completed" : "loading"}
-                duration={`${typeof apiCall.duration === 'number' ? apiCall.duration.toFixed(2) : '0.00'}`}
+                duration={`${typeof apiCall.duration === 'number' && !isNaN(apiCall.duration) ? Number(apiCall.duration).toFixed(2) : '0.00'}`}
                 tokenCost={apiCall.tokenCost}
               />
             </motion.div>

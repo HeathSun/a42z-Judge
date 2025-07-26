@@ -61,7 +61,8 @@ class DifyAPI {
   private baseURL: string;
 
   constructor() {
-    this.baseURL = process.env.NEXT_PUBLIC_DIFY_API_URL || 'https://api.dify.ai/v1';
+    // 使用本地代理而不是直接调用 Dify API
+    this.baseURL = '/api/dify-proxy';
   }
 
   // 配置 webhook (placeholder)
@@ -75,35 +76,41 @@ class DifyAPI {
     }
   }
 
-  // 使用 Chatflow API 发送消息到指定的评委
+  // 使用代理发送消息到指定的评委
   async sendMessageToJudge(judgeType: string, message: string, inputs?: Record<string, unknown>): Promise<DifyResponse> {
     const judgeConfig = JUDGE_CONFIGS[judgeType];
     if (!judgeConfig) {
       throw new Error(`Unknown judge type: ${judgeType}`);
     }
 
-    const response = await fetch(`${this.baseURL}/chat-messages`, {
+    console.log(`🔄 Sending message to ${judgeConfig.name} via proxy...`);
+
+    const response = await fetch(this.baseURL, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${judgeConfig.apiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        inputs: inputs || {},
-        query: message,
-        response_mode: 'blocking',
-        user: 'a42z_judge_user'
+        judgeType,
+        message,
+        inputs: inputs || {}
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`Dify API Error for ${judgeType}:`, errorText);
-      throw new Error(`Dify API Error: ${response.status} - ${errorText}`);
+      console.error(`❌ Proxy API Error for ${judgeType}:`, errorText);
+      throw new Error(`Proxy API Error: ${response.status} - ${errorText}`);
     }
 
     const result = await response.json();
-    return result as DifyResponse;
+    
+    if (!result.success) {
+      throw new Error(`Proxy API Error: ${result.error}`);
+    }
+
+    console.log(`✅ Response received from ${judgeConfig.name}`);
+    return result.data as DifyResponse;
   }
 
   // 技术同质化分析 (使用 receive_data 的 API key)
