@@ -4,9 +4,9 @@ import { cn } from "@/lib/utils";
 import { motion } from "motion/react";
 import { useEffect, useState } from "react";
 import {
-  AnimatedSpan,
   Terminal,
 } from "@/components/magicui/terminal";
+import { TypingAnimation } from "@/components/magicui/typing-animation";
 import { 
   Search, 
   Code, 
@@ -316,9 +316,13 @@ export function DifyAnalysisDisplay({
             <div className="bg-white/5 p-4 rounded-lg border border-white/10">
               <h4 className="text-white font-medium mb-2">Analysis Summary</h4>
               <Terminal className="max-h-32 overflow-y-auto">
-                <AnimatedSpan className="text-gray-300 text-sm leading-relaxed font-['Noto_Sans_SC']">
+                <TypingAnimation
+                  className="text-gray-300 text-sm leading-relaxed font-['Noto_Sans_SC']"
+                  duration={50}
+                  delay={500}
+                >
                   {displayedAnalysis.summary || "Analysis completed successfully. The repository has been thoroughly evaluated for technical homogeneity and compared with similar projects in the ecosystem."}
-                </AnimatedSpan>
+                </TypingAnimation>
               </Terminal>
             </div>
 
@@ -326,9 +330,13 @@ export function DifyAnalysisDisplay({
             <div className="bg-white/5 p-4 rounded-lg border border-white/10">
               <h4 className="text-white font-medium mb-3">Full Analysis</h4>
               <Terminal className="max-h-64 overflow-y-auto">
-                <AnimatedSpan className="text-gray-300 text-sm leading-relaxed font-['Noto_Sans_SC']">
+                <TypingAnimation
+                  className="text-gray-300 text-sm leading-relaxed font-['Noto_Sans_SC']"
+                  duration={30}
+                  delay={300}
+                >
                   {analysisData.answer}
-                </AnimatedSpan>
+                </TypingAnimation>
               </Terminal>
             </div>
 

@@ -1208,157 +1208,7 @@ function AITwinsDebate({ twins, debateRound }: { twins: AITwin[]; debateRound: n
   )
 }
 
-// Dify 执行状态显示组件
-function DifyExecutionStatusCard({ 
-  status, 
-  onClose 
-}: { 
-  status: DifyExecutionStatus; 
-  onClose: () => void;
-}) {
-  const getStatusColor = (status: DifyExecutionStatus['status']) => {
-    switch (status) {
-      case 'idle': return 'text-gray-500';
-      case 'triggering': return 'text-blue-500';
-      case 'success': return 'text-green-500';
-      case 'error': return 'text-red-500';
-      default: return 'text-gray-500';
-    }
-  };
 
-  const getStatusIcon = (status: DifyExecutionStatus['status']) => {
-    switch (status) {
-      case 'idle': return '⏸️';
-      case 'triggering': return '🔄';
-      case 'success': return '✅';
-      case 'error': return '❌';
-      default: return '⏸️';
-    }
-  };
-
-  const formatDuration = (duration?: number) => {
-    if (!duration) return 'N/A';
-    return `${duration}ms`;
-  };
-
-  const formatTime = (date?: Date) => {
-    if (!date) return 'N/A';
-    return date.toLocaleTimeString();
-  };
-
-  return (
-    <div className="bg-white border border-gray-200 rounded-lg p-4 mb-4 shadow-sm">
-      <div className="flex justify-between items-start mb-3">
-        <div className="flex items-center gap-2">
-          <span className="text-2xl">{getStatusIcon(status.status)}</span>
-          <div>
-            <h3 className="font-semibold text-lg">{status.judgeName}</h3>
-            <p className={`text-sm ${getStatusColor(status.status)}`}>
-              {status.status === 'idle' && '等待执行'}
-              {status.status === 'triggering' && '正在执行...'}
-              {status.status === 'success' && '执行成功'}
-              {status.status === 'error' && '执行失败'}
-            </p>
-          </div>
-        </div>
-        <button
-          onClick={onClose}
-          className="text-gray-400 hover:text-gray-600"
-        >
-          ✕
-        </button>
-      </div>
-
-      <div className="space-y-3">
-        {/* 执行时间信息 */}
-        <div className="grid grid-cols-2 gap-4 text-sm">
-          <div>
-            <span className="font-medium text-gray-600">开始时间:</span>
-            <span className="ml-2">{formatTime(status.startTime)}</span>
-          </div>
-          <div>
-            <span className="font-medium text-gray-600">结束时间:</span>
-            <span className="ml-2">{formatTime(status.endTime)}</span>
-          </div>
-          <div>
-            <span className="font-medium text-gray-600">执行时长:</span>
-            <span className="ml-2">{formatDuration(status.duration)}</span>
-          </div>
-        </div>
-
-        {/* 请求数据 */}
-        {status.requestData && (
-          <div className="border-t pt-3">
-            <h4 className="font-medium text-gray-700 mb-2">请求数据</h4>
-            <div className="bg-gray-50 p-3 rounded text-sm">
-              <div className="mb-2">
-                <span className="font-medium">消息:</span>
-                <span className="ml-2 text-gray-600">{status.requestData.message}</span>
-              </div>
-              <div className="mb-2">
-                <span className="font-medium">输入参数:</span>
-                <pre className="mt-1 text-xs bg-white p-2 rounded border">
-                  {JSON.stringify(status.requestData.inputs, null, 2)}
-                </pre>
-              </div>
-              <div>
-                <span className="font-medium">API Key:</span>
-                <span className="ml-2 text-gray-600 font-mono text-xs">
-                  {status.requestData.apiKey.substring(0, 8)}...
-                </span>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* 响应数据 */}
-        {status.responseData && (
-          <div className="border-t pt-3">
-            <h4 className="font-medium text-gray-700 mb-2">响应数据</h4>
-            <div className="bg-gray-50 p-3 rounded text-sm">
-              <div className="mb-2">
-                <span className="font-medium">回答:</span>
-                <div className="mt-1 text-gray-600 max-h-32 overflow-y-auto">
-                  {status.responseData.answer}
-                </div>
-              </div>
-              <div className="mb-2">
-                <span className="font-medium">对话ID:</span>
-                <span className="ml-2 text-gray-600 font-mono text-xs">
-                  {status.responseData.conversation_id}
-                </span>
-              </div>
-              <div className="mb-2">
-                <span className="font-medium">消息ID:</span>
-                <span className="ml-2 text-gray-600 font-mono text-xs">
-                  {status.responseData.message_id}
-                </span>
-              </div>
-              {status.responseData.metadata !== undefined && status.responseData.metadata !== null && (
-                <div>
-                  <span className="font-medium">元数据:</span>
-                  <pre className="mt-1 text-xs bg-white p-2 rounded border">
-                    {JSON.stringify(status.responseData.metadata as Record<string, unknown>, null, 2)}
-                  </pre>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* 错误信息 */}
-        {status.error && (
-          <div className="border-t pt-3">
-            <h4 className="font-medium text-red-700 mb-2">错误信息</h4>
-            <div className="bg-red-50 p-3 rounded text-sm text-red-600">
-              {status.error}
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
 
 // Main Component
 export default function A42zJudgeWorkflow() {
@@ -1382,7 +1232,6 @@ export default function A42zJudgeWorkflow() {
   
   // Dify 执行状态管理
   const [difyExecutionStatuses, setDifyExecutionStatuses] = useState<Record<string, DifyExecutionStatus>>({});
-  const [showExecutionStatus, setShowExecutionStatus] = useState(false);
   
   // 评委评论状态管理
   const [judgeComments, setJudgeComments] = useState<Array<{
@@ -1648,7 +1497,6 @@ export default function A42zJudgeWorkflow() {
           ...prev,
           [judgeType]: executionStatus
         }));
-        setShowExecutionStatus(true);
         
         // 调用对应的分析方法
         let result: DifyResponse;
@@ -1791,7 +1639,6 @@ export default function A42zJudgeWorkflow() {
             ...prev,
             'receive_data': executionStatus
           }));
-          setShowExecutionStatus(true);
           
           // 使用新的 Chatflow API 进行技术同质化分析
           const result = await difyAPI.analyzeTechnicalHomogeneity(file);
@@ -2008,35 +1855,7 @@ export default function A42zJudgeWorkflow() {
           </div>
         )}
 
-        {/* Dify Execution Status Display */}
-        {showExecutionStatus && Object.keys(difyExecutionStatuses).length > 0 && (
-          <div className="fixed top-4 right-4 max-w-md max-h-96 overflow-y-auto bg-zinc-900/95 border border-white/20 rounded-lg p-4 z-40">
-            <div className="flex justify-between items-center mb-3">
-              <h3 className="text-white font-semibold">Dify 执行状态</h3>
-              <button
-                onClick={() => setShowExecutionStatus(false)}
-                className="text-gray-400 hover:text-white"
-              >
-                ✕
-              </button>
-            </div>
-            <div className="space-y-3">
-              {Object.values(difyExecutionStatuses).map((status) => (
-                <DifyExecutionStatusCard
-                  key={status.judgeType}
-                  status={status}
-                  onClose={() => {
-                    setDifyExecutionStatuses(prev => {
-                      const newStatuses = { ...prev };
-                      delete newStatuses[status.judgeType];
-                      return newStatuses;
-                    });
-                  }}
-                />
-              ))}
-            </div>
-          </div>
-        )}
+
 
       <div className="fixed inset-0 -z-20 w-full h-full bg-black" />
       <div className="fixed inset-0 -z-10 w-full h-full">
