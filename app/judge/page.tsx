@@ -21,6 +21,7 @@ import { difyAPI, DifyResponse } from '@/lib/dify';
 import { ApiCallItem } from '@/components/magicui/api-call-item';
 import { LucideIcon } from "lucide-react";
 import { DifyAnalysisDisplay } from '@/components/magicui/dify-analysis-display';
+import { JudgeComments } from '@/components/magicui/judge-comments';
 
 // Types
 
@@ -1297,7 +1298,7 @@ function DifyExecutionStatusCard({
               <div className="mb-2">
                 <span className="font-medium">输入参数:</span>
                 <pre className="mt-1 text-xs bg-white p-2 rounded border">
-                  {status.requestData.inputs ? JSON.stringify(status.requestData.inputs, null, 2) : '{}'}
+                  {JSON.stringify(status.requestData.inputs, null, 2)}
                 </pre>
               </div>
               <div>
@@ -1318,26 +1319,26 @@ function DifyExecutionStatusCard({
               <div className="mb-2">
                 <span className="font-medium">回答:</span>
                 <div className="mt-1 text-gray-600 max-h-32 overflow-y-auto">
-                  {status.responseData.answer || 'No answer provided'}
+                  {status.responseData.answer}
                 </div>
               </div>
               <div className="mb-2">
                 <span className="font-medium">对话ID:</span>
                 <span className="ml-2 text-gray-600 font-mono text-xs">
-                  {status.responseData.conversation_id || 'N/A'}
+                  {status.responseData.conversation_id}
                 </span>
               </div>
               <div className="mb-2">
                 <span className="font-medium">消息ID:</span>
                 <span className="ml-2 text-gray-600 font-mono text-xs">
-                  {status.responseData.message_id || 'N/A'}
+                  {status.responseData.message_id}
                 </span>
               </div>
               {status.responseData.metadata !== undefined && status.responseData.metadata !== null && (
                 <div>
                   <span className="font-medium">元数据:</span>
                   <pre className="mt-1 text-xs bg-white p-2 rounded border">
-                    {JSON.stringify(status.responseData.metadata, null, 2)}
+                    {JSON.stringify(status.responseData.metadata as Record<string, unknown>, null, 2)}
                   </pre>
                 </div>
               )}
@@ -1382,6 +1383,16 @@ export default function A42zJudgeWorkflow() {
   // Dify 执行状态管理
   const [difyExecutionStatuses, setDifyExecutionStatuses] = useState<Record<string, DifyExecutionStatus>>({});
   const [showExecutionStatus, setShowExecutionStatus] = useState(false);
+  
+  // 评委评论状态管理
+  const [judgeComments, setJudgeComments] = useState<Array<{
+    id: string;
+    name: string;
+    avatar: string;
+    comment: string;
+    status: 'pending' | 'completed' | 'error';
+    timestamp?: string;
+  }>>([]);
 
   useEffect(() => {
     setIsClient(true);
@@ -1677,6 +1688,44 @@ export default function A42zJudgeWorkflow() {
         
         console.log(`${judgeConfig.name} 分析完成:`, result.answer);
         
+        // 更新评委评论
+        const judgeAvatarMap: Record<string, string> = {
+          'paul': "https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img//paul.png",
+          'andrew': "https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img//andrew.png",
+          'sam': "https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img//sam.png",
+          'feifei': "https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img//feifei.png"
+        };
+        
+        const judgeNameMap: Record<string, string> = {
+          'paul': 'Paul Graham',
+          'ng': 'Andrew Ng',
+          'sam': 'Sam Altman',
+          'li': 'Feifei Li',
+          'business': 'Business Analyst'
+        };
+        
+        const newComment = {
+          id: `${judgeType}-${Date.now()}`,
+          name: judgeNameMap[judgeType] || judgeConfig.name,
+          avatar: judgeAvatarMap[judgeType] || judgeAvatarMap['paul'],
+          comment: result.answer,
+          status: 'completed' as const,
+          timestamp: new Date().toLocaleTimeString()
+        };
+        
+        setJudgeComments(prev => {
+          const existingIndex = prev.findIndex(c => c.name === newComment.name);
+          if (existingIndex >= 0) {
+            // 更新现有评论
+            const updated = [...prev];
+            updated[existingIndex] = newComment;
+            return updated;
+          } else {
+            // 添加新评论
+            return [...prev, newComment];
+          }
+        });
+        
       } catch (error) {
         console.error(`${judgeType} 分析失败:`, error);
         
@@ -1903,7 +1952,7 @@ export default function A42zJudgeWorkflow() {
           <MagicCard className="rounded-2xl shadow-2xl border-2 border-white/30 bg-gradient-to-b from-zinc-200 to-zinc-100 max-w-sm w-full mx-4">
             <form className="flex flex-col items-center gap-4 p-8" onSubmit={e => e.preventDefault()}>
               <div className="flex items-center justify-center gap-2 mb-2">
-                <Image src="https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img/a42z-black.png" alt="a42z" width={80} height={80} />
+                <Image src="https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img//a42z-black.png" alt="a42z" width={80} height={80} />
                 <span className="text-xl text-black align-middle" style={{lineHeight: '1.75em', display: 'inline-block'}}>Early Access</span>
               </div>
               {loginError && <span className="text-red-400 text-sm">{loginError}</span>}
@@ -1917,7 +1966,7 @@ export default function A42zJudgeWorkflow() {
                   className="w-full"
                 >
                   <span className="inline-flex items-center gap-2">
-                    <Image src="https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img/google.png" alt="Google logo" width={20} height={20} style={{ display: 'inline-block', verticalAlign: 'middle' }} />
+                    <Image src="https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img//google.png" alt="Google logo" width={20} height={20} style={{ display: 'inline-block', verticalAlign: 'middle' }} />
                     Sign in with Google
                   </span>
                 </RainbowButton>
@@ -2003,7 +2052,7 @@ export default function A42zJudgeWorkflow() {
               className="text-4xl font-bold text-white mb-2 flex justify-center items-center"
               style={{ fontFamily: "'Chakra Petch', sans-serif" }}
             >
-              <Image src="https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img/a42z.png" alt="a42z Judge Logo" width={400} height={400} />
+              <Image src="https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img//a42z.png" alt="a42z Judge Logo" width={400} height={400} />
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: -10 }}
@@ -2075,11 +2124,11 @@ export default function A42zJudgeWorkflow() {
                     {/* 测试按钮 - 触发所有评委分析 */}
                     {files.some(f => f.type === "github" && f.status === "completed") && (
                       <div className="mt-4 pt-4 border-t border-white/20">
-                    
+                        <h4 className="text-white font-medium mb-3">测试所有评委分析</h4>
                         <p className="text-zinc-400 text-sm mb-3">
-                          Click the button below to test the API call for all judges
+                          点击下面的按钮来测试所有评委的 Dify Chatflow API 调用
                         </p>
-                        <RainbowButton
+                        <button
                           onClick={() => {
                             const githubFile = files.find(f => f.type === "github");
                             if (githubFile && typeof githubFile.name === "string") {
@@ -2088,8 +2137,8 @@ export default function A42zJudgeWorkflow() {
                           }}
                           className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
                         >
-                          🧪 Iterate through all
-                        </RainbowButton>
+                          🧪 测试所有评委分析
+                        </button>
                       </div>
                     )}
                   </motion.div>
@@ -2120,6 +2169,17 @@ export default function A42zJudgeWorkflow() {
           </div>
         </div>
       </div>
+
+      {/* 评委评论显示区域 */}
+      {judgeComments.length > 0 && (
+        <div className="container mx-auto px-4 py-8">
+          <JudgeComments 
+            comments={judgeComments}
+            isVisible={true}
+            className="max-w-6xl mx-auto"
+          />
+        </div>
+      )}
       {/* 修改右上角 avatar 的定位和样式 */}
       <div className="fixed top-8 right-8 z-50">
         {isLoggedIn && (
@@ -2153,7 +2213,7 @@ function AccountDropdown({ userEmail, onLogout }: { userEmail: string | null, on
         onClick={() => setOpen((v) => !v)}
       >
         <Avatar className="size-10 border border-white/20 shadow-lg bg-white/80">
-          <AvatarImage src="https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img/user1.png" alt="user avatar" />
+          <AvatarImage src="https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img//user1.png" alt="user avatar" />
           <AvatarFallback>
             <User2 className="w-6 h-6 text-zinc-500" />
           </AvatarFallback>
@@ -2173,7 +2233,7 @@ function AccountDropdown({ userEmail, onLogout }: { userEmail: string | null, on
             <div className="relative z-10">
               <div className="flex items-center gap-3 mb-2">
                 <Avatar className="size-10 border-2 border-zinc-300 shadow-lg bg-zinc-100">
-                  <AvatarImage src="https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img/user1.png" alt="user avatar" />
+                  <AvatarImage src="https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img//user1.png" alt="user avatar" />
                   <AvatarFallback>
                     <User2 className="w-5 h-5 text-zinc-500" />
                   </AvatarFallback>
