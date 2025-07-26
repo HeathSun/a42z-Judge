@@ -1606,12 +1606,25 @@ export default function A42zJudgeWorkflow() {
   const triggerAllJudgeAnalyses = async (githubUrl: string) => {
     const judgeTypes = ['business', 'sam', 'li', 'ng', 'paul', 'summary'];
     
+    // 获取 PDF URL（如果存在）
+    let pdfUrl: string | undefined;
+    const pdfFile = files.find(f => f.type === "pdf" && f.status === "completed");
+    if (pdfFile && userEmail) {
+      pdfUrl = `https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/pdf/${userEmail}.pdf`;
+    }
+    
     for (const judgeType of judgeTypes) {
       try {
         const startTime = new Date();
         const judgeConfig = difyAPI.getJudgeConfig(judgeType);
         
         if (!judgeConfig) continue;
+        
+        // 构建输入参数
+        const inputs: Record<string, unknown> = { repo_url: githubUrl };
+        if (pdfUrl) {
+          inputs.repo_pdf = pdfUrl;
+        }
         
         // 初始化执行状态
         const executionStatus: DifyExecutionStatus = {
@@ -1621,7 +1634,7 @@ export default function A42zJudgeWorkflow() {
           startTime,
           requestData: {
             message: `请从 ${judgeConfig.name} 的角度分析这个项目：${githubUrl}`,
-            inputs: { repo_url: githubUrl },
+            inputs,
             apiKey: judgeConfig.apiKey
           }
         };
@@ -1636,22 +1649,22 @@ export default function A42zJudgeWorkflow() {
         let result: DifyResponse;
         switch (judgeType) {
           case 'business':
-            result = await difyAPI.analyzeBusinessPotential(githubUrl);
+            result = await difyAPI.analyzeBusinessPotential(githubUrl, pdfUrl);
             break;
           case 'sam':
-            result = await difyAPI.getSamAnalysis(githubUrl);
+            result = await difyAPI.getSamAnalysis(githubUrl, pdfUrl);
             break;
           case 'li':
-            result = await difyAPI.getLiAnalysis(githubUrl);
+            result = await difyAPI.getLiAnalysis(githubUrl, pdfUrl);
             break;
           case 'ng':
-            result = await difyAPI.getNgAnalysis(githubUrl);
+            result = await difyAPI.getNgAnalysis(githubUrl, pdfUrl);
             break;
           case 'paul':
-            result = await difyAPI.getPaulAnalysis(githubUrl);
+            result = await difyAPI.getPaulAnalysis(githubUrl, pdfUrl);
             break;
           case 'summary':
-            result = await difyAPI.getSummaryAnalysis(githubUrl);
+            result = await difyAPI.getSummaryAnalysis(githubUrl, pdfUrl);
             break;
           default:
             throw new Error(`Unknown judge type: ${judgeType}`);
@@ -1718,9 +1731,23 @@ export default function A42zJudgeWorkflow() {
           setIsAnalyzingWithDify(true);
           console.log('开始技术同质化分析:', file);
           
+          // 获取 PDF URL（如果存在）
+          let pdfUrl: string | undefined;
+          const pdfFile = files.find(f => f.type === "pdf" && f.status === "completed");
+          if (pdfFile && userEmail) {
+            pdfUrl = `https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/pdf/${userEmail}.pdf`;
+          }
+          
           // 初始化执行状态
           const startTime = new Date();
           const judgeConfig = difyAPI.getJudgeConfig('receive_data');
+          
+          // 构建输入参数
+          const inputs: Record<string, unknown> = { repo_url: file };
+          if (pdfUrl) {
+            inputs.repo_pdf = pdfUrl;
+          }
+          
           const executionStatus: DifyExecutionStatus = {
             judgeType: 'receive_data',
             judgeName: judgeConfig?.name || 'Technical Analysis',
@@ -1728,7 +1755,7 @@ export default function A42zJudgeWorkflow() {
             startTime,
             requestData: {
               message: `请分析这个 GitHub 仓库的技术同质化程度：${file}`,
-              inputs: { repo_url: file },
+              inputs,
               apiKey: judgeConfig?.apiKey || ''
             }
           };
@@ -1740,7 +1767,7 @@ export default function A42zJudgeWorkflow() {
           setShowExecutionStatus(true);
           
           // 使用新的 Chatflow API 进行技术同质化分析
-          const result = await difyAPI.analyzeTechnicalHomogeneity(file);
+          const result = await difyAPI.analyzeTechnicalHomogeneity(file, pdfUrl);
           setDifyAnalysis(result);
           console.log('技术同质化分析完成:', result.answer);
           
