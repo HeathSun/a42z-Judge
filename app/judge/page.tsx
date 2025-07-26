@@ -1903,7 +1903,7 @@ export default function A42zJudgeWorkflow() {
           <MagicCard className="rounded-2xl shadow-2xl border-2 border-white/30 bg-gradient-to-b from-zinc-200 to-zinc-100 max-w-sm w-full mx-4">
             <form className="flex flex-col items-center gap-4 p-8" onSubmit={e => e.preventDefault()}>
               <div className="flex items-center justify-center gap-2 mb-2">
-                <Image src="https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img//a42z-black.png" alt="a42z" width={80} height={80} />
+                <Image src="https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img/a42z-black.png" alt="a42z" width={80} height={80} />
                 <span className="text-xl text-black align-middle" style={{lineHeight: '1.75em', display: 'inline-block'}}>Early Access</span>
               </div>
               {loginError && <span className="text-red-400 text-sm">{loginError}</span>}
@@ -1917,7 +1917,7 @@ export default function A42zJudgeWorkflow() {
                   className="w-full"
                 >
                   <span className="inline-flex items-center gap-2">
-                    <Image src="https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img//google.png" alt="Google logo" width={20} height={20} style={{ display: 'inline-block', verticalAlign: 'middle' }} />
+                    <Image src="https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img/google.png" alt="Google logo" width={20} height={20} style={{ display: 'inline-block', verticalAlign: 'middle' }} />
                     Sign in with Google
                   </span>
                 </RainbowButton>
@@ -2003,7 +2003,7 @@ export default function A42zJudgeWorkflow() {
               className="text-4xl font-bold text-white mb-2 flex justify-center items-center"
               style={{ fontFamily: "'Chakra Petch', sans-serif" }}
             >
-              <Image src="https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img//a42z.png" alt="a42z Judge Logo" width={400} height={400} />
+              <Image src="https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img/a42z.png" alt="a42z Judge Logo" width={400} height={400} />
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: -10 }}
@@ -2153,7 +2153,7 @@ function AccountDropdown({ userEmail, onLogout }: { userEmail: string | null, on
         onClick={() => setOpen((v) => !v)}
       >
         <Avatar className="size-10 border border-white/20 shadow-lg bg-white/80">
-          <AvatarImage src="https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img//user1.png" alt="user avatar" />
+          <AvatarImage src="https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img/user1.png" alt="user avatar" />
           <AvatarFallback>
             <User2 className="w-6 h-6 text-zinc-500" />
           </AvatarFallback>
@@ -2173,7 +2173,7 @@ function AccountDropdown({ userEmail, onLogout }: { userEmail: string | null, on
             <div className="relative z-10">
               <div className="flex items-center gap-3 mb-2">
                 <Avatar className="size-10 border-2 border-zinc-300 shadow-lg bg-zinc-100">
-                  <AvatarImage src="https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img//user1.png" alt="user avatar" />
+                  <AvatarImage src="https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img/user1.png" alt="user avatar" />
                   <AvatarFallback>
                     <User2 className="w-5 h-5 text-zinc-500" />
                   </AvatarFallback>
