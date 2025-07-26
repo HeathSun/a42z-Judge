@@ -14,7 +14,7 @@ NEXT_PUBLIC_DIFY_API_URL=https://api.dify.ai/v1
 NEXT_PUBLIC_DIFY_API_KEY=app-dhIC2LKWiF6txqsziyaAPvQy
 
 # Dify Public URL (for reference)
-NEXT_PUBLIC_DIFY_PUBLIC_URL=https://api.dify.ai/v1/workflows/9Eiom2dpjU9WpUI7
+NEXT_PUBLIC_DIFY_PUBLIC_URL=https://udify.app/chat/9Eiom2dpjU9WpUI7
 
 # Webhook Configuration
 NEXT_PUBLIC_WEBHOOK_URL=http://localhost:3000/api/webhook/dify

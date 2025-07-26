@@ -1,27 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// Paul API 数据接口
-interface PaulData {
-  user_id?: string;
-  repo_url?: string;
-  repo_pdf?: string;
-  timestamp?: string;
-  [key: string]: unknown;
-}
-
 // 存储接收到的数据（用于调试和临时存储）
-const paulData = new Map<string, PaulData>();
+const receivedData = new Map<string, any>();
 
 export async function POST(request: NextRequest) {
   try {
-    const body: PaulData = await request.json();
-    const { repo_url, repo_pdf, user_id } = body;
-    
-    console.log('📥 Paul API Called:', {
-      user_id: body.user_id,
-      repo_url: body.repo_url,
-      repo_pdf: body.repo_pdf,
-      timestamp: body.timestamp || new Date().toISOString()
+    const body = await request.json();
+    const { github_url, user_id } = body;
+
+    console.log('📥 Paul Analysis Request:', {
+      user_id,
+      github_url,
+      timestamp: new Date().toISOString()
     });
 
     // 调用 Dify 聊天机器人
@@ -31,7 +21,7 @@ export async function POST(request: NextRequest) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        inputs: { repo_url, repo_pdf },
+        inputs: { github_url },
         user: user_id || 'anonymous'
       }),
     });
@@ -42,21 +32,30 @@ export async function POST(request: NextRequest) {
 
     const result = await response.json();
     
-    // 存储数据用于调试
-    const dataId = user_id || `paul_${Date.now()}`;
-    paulData.set(dataId, {
-      ...body,
-      timestamp: body.timestamp || new Date().toISOString()
-    });
+    // 生成唯一ID用于存储
+    const dataId = typeof user_id === 'string' ? user_id : `paul_${Date.now()}`;
     
-    return NextResponse.json({
-      success: true,
+    // 存储到内存（用于调试）
+    receivedData.set(dataId, {
+      user_id,
+      github_url,
+      result,
+      source: 'paul_graham',
+      timestamp: new Date().toISOString()
+    });
+
+    // 返回成功响应
+    return NextResponse.json({ 
+      success: true, 
+      message: 'Paul analysis completed successfully',
       data: result,
-      source: 'paul'
+      data_id: dataId,
+      source: 'paul_graham',
+      timestamp: new Date().toISOString()
     });
 
   } catch (error) {
-    console.error('❌ Paul API Error:', error);
+    console.error('Paul API Error:', error);
     return NextResponse.json(
       { 
         success: false, 
@@ -78,16 +77,16 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       { 
         success: true, 
-        message: 'Paul API endpoint is ready',
+        message: 'Paul analysis endpoint is ready',
         available_methods: ['POST', 'GET'],
-        note: 'Use POST to send Paul analysis request, GET with data_id to query received data',
+        note: 'Use POST to send Paul analysis request, GET with data_id to query results',
         endpoint: 'https://www.a42z.ai/api/paul'
       },
       { status: 200 }
     );
   }
 
-  const data = paulData.get(dataId);
+  const data = receivedData.get(dataId);
   
   if (!data) {
     return NextResponse.json(
@@ -99,5 +98,23 @@ export async function GET(request: NextRequest) {
   return NextResponse.json({
     success: true,
     data: data
+  });
+}
+
+// PUT 端点用于获取所有接收到的数据（用于调试）
+export async function PUT() {
+  const allData = Array.from(receivedData.entries()).map(([id, data]) => ({
+    data_id: id,
+    user_id: data.user_id,
+    github_url: data.github_url,
+    source: data.source,
+    timestamp: data.timestamp,
+    has_result: !!data.result
+  }));
+
+  return NextResponse.json({
+    success: true,
+    count: allData.length,
+    data: allData
   });
 } 

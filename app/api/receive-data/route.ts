@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { supabase } from '@/lib/supabase';
 
 // Dify Workflow 数据接口
 interface DifyWorkflowData {
   user_id?: string;
   workflow_result?: string;
   github_url?: string;
-  repo_url?: string;
-  repo_pdf?: string;
   analysis_type?: string;
   metadata?: Record<string, unknown>;
   timestamp?: string;
@@ -20,34 +19,60 @@ export async function POST(request: NextRequest) {
   try {
     const body: DifyWorkflowData = await request.json();
     
-    console.log('📥 Receive Data API Called:', {
+    console.log('📥 Dify Workflow Data Received:', {
       user_id: body.user_id,
-      repo_url: body.repo_url,
+      workflow_result: typeof body.workflow_result === 'string' ? body.workflow_result.substring(0, 100) + '...' : '',
+      github_url: body.github_url,
+      analysis_type: body.analysis_type,
       timestamp: body.timestamp || new Date().toISOString()
     });
 
-    // 调用 Dify 聊天机器人
-    const response = await fetch('https://udify.app/chat/9Eiom2dpjU9WpUI7', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        inputs: { repo_url: body.repo_url },
-        user: body.user_id || 'anonymous'
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Dify API error: ${response.status}`);
+    // 验证webhook签名（可选，增加安全性）
+    const signature = request.headers.get('x-dify-signature');
+    if (signature) {
+      console.log('🔐 Webhook signature:', signature);
+      // 这里可以添加签名验证逻辑
     }
 
-    const result = await response.json();
+    // 生成唯一ID用于存储
+    const dataId = typeof body.user_id === 'string' ? body.user_id : `data_${Date.now()}`;
     
-    return NextResponse.json({
-      success: true,
-      data: result,
-      source: 'receive_data'
+    // 存储到内存（用于调试）
+    receivedData.set(dataId, {
+      ...body,
+      timestamp: body.timestamp || new Date().toISOString()
+    });
+
+    // 存储到 Supabase 数据库（如果配置了的话）
+    if (body.github_url && body.workflow_result && typeof body.github_url === 'string' && typeof body.workflow_result === 'string') {
+      try {
+        const { data, error } = await supabase
+          .from('judge_comments')
+          .insert({
+            conversation_id: dataId,
+            github_repo_url: body.github_url,
+            gmail: typeof body.user_id === 'string' ? body.user_id : '',
+            analysis_result: body.workflow_result,
+            analysis_metadata: body.metadata,
+            created_at: new Date().toISOString()
+          });
+
+        if (error) {
+          console.error('❌ Supabase insert error:', error);
+        } else {
+          console.log('✅ Data saved to database:', data);
+        }
+      } catch (dbError) {
+        console.error('❌ Database error:', dbError);
+      }
+    }
+
+    // 返回成功响应
+    return NextResponse.json({ 
+      success: true, 
+      message: 'Data received successfully',
+      data_id: dataId,
+      timestamp: new Date().toISOString()
     });
 
   } catch (error) {

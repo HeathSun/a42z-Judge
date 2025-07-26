@@ -8,7 +8,7 @@
 # Dify API Configuration
 NEXT_PUBLIC_DIFY_API_URL=https://api.dify.ai/v1
 NEXT_PUBLIC_DIFY_API_KEY=app-dhIC2LKWiF6txqsziyaAPvQy
-NEXT_PUBLIC_DIFY_PUBLIC_URL=https://api.dify.ai/v1/workflows/9Eiom2dpjU9WpUI7
+NEXT_PUBLIC_DIFY_PUBLIC_URL=https://udify.app/chat/9Eiom2dpjU9WpUI7
 
 # Webhook Configuration
 NEXT_PUBLIC_WEBHOOK_URL=https://www.a42z.ai/api/webhook/dify
