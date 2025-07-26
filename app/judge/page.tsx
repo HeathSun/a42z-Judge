@@ -5,7 +5,6 @@ import React, { useState, useRef, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { ChevronRight, Github, FileText, Plus, ExternalLink, Loader2, Search, Brain, Database, Cpu, Code, Zap, Globe, TrendingUp, BarChart3, Shield, GitBranch, Webhook, Bot, Sparkles, Award, Building2, Activity } from "lucide-react"
 import { ShimmerButton } from "@/components/magicui/shimmer-button";
-import { ShinyButton } from "@/components/magicui/shiny-button";
 import { FlickeringGrid } from "@/components/magicui/flickering-grid";
 import { RainbowButton } from "@/components/magicui/rainbow-button";
 import Link from "next/link";
