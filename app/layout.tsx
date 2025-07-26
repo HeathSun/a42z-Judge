@@ -19,6 +19,9 @@ export const metadata: Metadata = {
     icon: [
       { url: "/favicon.ico", type: "image/x-icon" }
     ]
+  },
+  other: {
+    "format-detection": "telephone=no, date=no, email=no, address=no"
   }
 };
 

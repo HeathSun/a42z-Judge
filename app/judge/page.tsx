@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from "react"
 
 import { motion, AnimatePresence } from "framer-motion"
-import { ChevronRight, Github, FileText, Plus, ExternalLink, Loader2 } from "lucide-react"
+import { ChevronRight, Github, FileText, Plus, ExternalLink, Loader2, Search, Brain, Database, Cpu, Code, Zap, Globe, TrendingUp, BarChart3, Shield, GitBranch, Webhook, Bot, Sparkles, Award, Building2, Activity } from "lucide-react"
 import { ShimmerButton } from "@/components/magicui/shimmer-button";
 import { ShinyButton } from "@/components/magicui/shiny-button";
 import { FlickeringGrid } from "@/components/magicui/flickering-grid";
@@ -16,6 +16,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { User2 } from 'lucide-react';
 import { ShineBorder } from '@/components/magicui/shine-border';
 import { TextAnimate } from '@/components/magicui/text-animate';
+import { Terminal, TypingAnimation, AnimatedSpan } from '@/components/magicui/terminal';
+import { difyAPI, DifyResponse } from '@/lib/dify';
+
+import { ApiCallItem } from '@/components/magicui/api-call-item';
+import { LucideIcon } from "lucide-react";
 
 // Types
 
@@ -53,6 +58,7 @@ interface WorkflowStep {
   citations?: Citation[]
   content?: string
   substeps?: WorkflowStep[]
+  internalSteps?: string[]
 }
 
 interface AITwin {
@@ -72,6 +78,493 @@ const aiTwins: AITwin[] = [
   { id: "ak", name: "Andrej Karpathy", avatar: "🤖", role: "AI Researcher", thinking: false },
   { id: "a16z", name: "Andreessen Horowitz", avatar: "💼", role: "VC Partner", thinking: false },
 ]
+
+// 新增接口定义
+interface ApiCall {
+  id: string;
+  icon: LucideIcon;
+  title: string;
+  description: string;
+  duration: number; // 随机时间数值
+  tokenCost?: number; // 只有大模型有token消耗
+  delay: number; // 出现延迟
+}
+
+interface TerminalStep {
+  id: string;
+  text: string;
+  type: "command" | "api-call";
+  duration: number;
+  apiCall?: ApiCall;
+}
+
+function TerminalSteps({ steps, isVisible, stepType = "business-research" }: { steps: string[], isVisible: boolean, stepType?: string }) {
+  const [completedSteps, setCompletedSteps] = useState<string[]>([]);
+  const [currentStep, setCurrentStep] = useState<string | null>(null);
+  const [hasStarted, setHasStarted] = useState(false);
+  const [hasCompleted, setHasCompleted] = useState(false);
+  const [terminalSteps, setTerminalSteps] = useState<TerminalStep[]>([]);
+  const [visibleApiCalls, setVisibleApiCalls] = useState<ApiCall[]>([]);
+
+  // 生成API Calls配置
+  const generateApiCalls = (stepType: string): ApiCall[] => {
+    // 生成随机时间数值（几十+小数点后二位）
+    const generateRandomTime = () => {
+      const base = Math.floor(Math.random() * 70) + 30; // 30-100
+      const decimal = Math.floor(Math.random() * 100); // 0-99
+      return parseFloat(`${base}.${decimal.toString().padStart(2, '0')}`);
+    };
+
+    // 生成随机延迟时间（更大的扰动）
+    const generateRandomDelay = (baseDelay: number) => {
+      const variation = Math.random() * 0.8 + 0.2; // 20%-100%的随机变化
+      return Math.floor(baseDelay * variation);
+    };
+
+          // 基础API调用池
+      const apiCallPool: ApiCall[] = [
+        // 搜索引擎和搜索API
+        {
+          id: "google-search",
+          icon: Search,
+          title: "Google Search API",
+          description: "Searching for market trends and competitors",
+          duration: generateRandomTime(),
+          delay: generateRandomDelay(1500),
+        },
+        {
+          id: "perplexity",
+          icon: Globe,
+          title: "Perplexity API",
+          description: "Real-time web search and analysis",
+          duration: generateRandomTime(),
+          delay: generateRandomDelay(1800),
+        },
+        
+        // 数据库和存储
+        {
+          id: "database-query",
+          icon: Database,
+          title: "Database Query",
+          description: "Fetching historical data and benchmarks",
+          duration: generateRandomTime(),
+          delay: generateRandomDelay(1200),
+        },
+        {
+          id: "crunchbase",
+          icon: Building2,
+          title: "Crunchbase API",
+          description: "Startup and company data analysis",
+          duration: generateRandomTime(),
+          delay: generateRandomDelay(2000),
+        },
+        {
+          id: "ycombinator",
+          icon: Award,
+          title: "Y Combinator API",
+          description: "Startup accelerator and portfolio data",
+          duration: generateRandomTime(),
+          delay: generateRandomDelay(2200),
+        },
+      
+      // 代码分析工具
+      {
+        id: "github-api",
+        icon: Github,
+        title: "GitHub API",
+        description: "Repository analysis and metrics",
+        duration: generateRandomTime(),
+        delay: generateRandomDelay(1600),
+      },
+      {
+        id: "repointel",
+        icon: GitBranch,
+        title: "RepoIntel API",
+        description: "Advanced repository intelligence",
+        duration: generateRandomTime(),
+        delay: generateRandomDelay(2200),
+      },
+      {
+        id: "sonarqube",
+        icon: Code,
+        title: "SonarQube API",
+        description: "Code quality and security analysis",
+        duration: generateRandomTime(),
+        delay: generateRandomDelay(1900),
+      },
+      
+      // 新闻和媒体
+      {
+        id: "techcrunch",
+        icon: TrendingUp,
+        title: "TechCrunch API",
+        description: "Tech news and startup coverage",
+        duration: generateRandomTime(),
+        delay: generateRandomDelay(1700),
+      },
+      {
+        id: "devpost",
+        icon: Award,
+        title: "DevPost API",
+        description: "Hackathon project analysis",
+        duration: generateRandomTime(),
+        delay: generateRandomDelay(2100),
+      },
+      
+      // 爬虫和数据抓取
+      {
+        id: "firecrawl",
+        icon: Webhook,
+        title: "Firecrawl API",
+        description: "Web scraping and data extraction",
+        duration: generateRandomTime(),
+        delay: generateRandomDelay(2400),
+      },
+      {
+        id: "apify",
+        icon: Bot,
+        title: "Apify API",
+        description: "Automated data collection",
+        duration: generateRandomTime(),
+        delay: generateRandomDelay(2300),
+      },
+      
+      // 大语言模型
+      {
+        id: "openai-gpt4",
+        icon: Brain,
+        title: "OpenAI GPT-4",
+        description: "Advanced language model analysis",
+        duration: generateRandomTime(),
+        tokenCost: Math.floor(Math.random() * 3000) + 1000,
+        delay: generateRandomDelay(2500),
+      },
+      {
+        id: "openai-gpt4-mini",
+        icon: Sparkles,
+        title: "OpenAI GPT-4 Mini",
+        description: "Fast language model processing",
+        duration: generateRandomTime(),
+        tokenCost: Math.floor(Math.random() * 2000) + 500,
+        delay: generateRandomDelay(1800),
+      },
+      {
+        id: "claude-sonnet",
+        icon: Cpu,
+        title: "Claude 3.5 Sonnet",
+        description: "Anthropic's advanced AI analysis",
+        duration: generateRandomTime(),
+        tokenCost: Math.floor(Math.random() * 2500) + 800,
+        delay: generateRandomDelay(2000),
+      },
+      {
+        id: "claude-opus",
+        icon: Zap,
+        title: "Claude 3.5 Opus",
+        description: "Ultra-advanced reasoning and analysis",
+        duration: generateRandomTime(),
+        tokenCost: Math.floor(Math.random() * 4000) + 1500,
+        delay: generateRandomDelay(3000),
+      },
+      
+      // 专业分析工具
+      {
+        id: "security-scan",
+        icon: Shield,
+        title: "Security Vulnerability Scan",
+        description: "Code security analysis",
+        duration: generateRandomTime(),
+        delay: generateRandomDelay(2200),
+      },
+      {
+        id: "performance-test",
+        icon: Activity,
+        title: "Performance Testing API",
+        description: "Application performance analysis",
+        duration: generateRandomTime(),
+        delay: generateRandomDelay(1900),
+      },
+      {
+        id: "market-analysis",
+        icon: BarChart3,
+        title: "Market Analysis API",
+        description: "Market trends and competition analysis",
+        duration: generateRandomTime(),
+        delay: generateRandomDelay(2100),
+      },
+    ];
+
+    // 根据步骤类型选择特定的API调用
+    let selectedCalls: ApiCall[] = [];
+    
+    switch (stepType) {
+      case "technical-research":
+        selectedCalls = [
+          apiCallPool.find(call => call.id === "github-api")!,
+          apiCallPool.find(call => call.id === "repointel")!,
+          apiCallPool.find(call => call.id === "claude-sonnet")!,
+          apiCallPool.find(call => call.id === "security-scan")!,
+        ].filter(Boolean);
+        break;
+        
+      case "code-quality-research":
+        selectedCalls = [
+          apiCallPool.find(call => call.id === "sonarqube")!,
+          apiCallPool.find(call => call.id === "github-api")!,
+          apiCallPool.find(call => call.id === "performance-test")!,
+          apiCallPool.find(call => call.id === "openai-gpt4")!,
+        ].filter(Boolean);
+        break;
+        
+      case "business-research":
+        selectedCalls = [
+          apiCallPool.find(call => call.id === "crunchbase")!,
+          apiCallPool.find(call => call.id === "techcrunch")!,
+          apiCallPool.find(call => call.id === "ycombinator")!,
+          apiCallPool.find(call => call.id === "perplexity")!,
+          apiCallPool.find(call => call.id === "market-analysis")!,
+          apiCallPool.find(call => call.id === "openai-gpt4")!,
+        ].filter(Boolean);
+        break;
+        
+      case "hackathon-research":
+        selectedCalls = [
+          apiCallPool.find(call => call.id === "devpost")!,
+          apiCallPool.find(call => call.id === "github-api")!,
+          apiCallPool.find(call => call.id === "firecrawl")!,
+          apiCallPool.find(call => call.id === "claude-sonnet")!,
+        ].filter(Boolean);
+        break;
+        
+      case "ai-analysis":
+        selectedCalls = [
+          apiCallPool.find(call => call.id === "openai-gpt4")!,
+          apiCallPool.find(call => call.id === "claude-opus")!,
+          apiCallPool.find(call => call.id === "database-query")!,
+          apiCallPool.find(call => call.id === "security-scan")!,
+        ].filter(Boolean);
+        break;
+        
+      case "scoring":
+        selectedCalls = [
+          apiCallPool.find(call => call.id === "openai-gpt4-mini")!,
+          apiCallPool.find(call => call.id === "database-query")!,
+          apiCallPool.find(call => call.id === "market-analysis")!,
+        ].filter(Boolean);
+        break;
+        
+      default:
+        // 默认选择一些通用API
+        selectedCalls = [
+          apiCallPool.find(call => call.id === "google-search")!,
+          apiCallPool.find(call => call.id === "database-query")!,
+        ].filter(Boolean);
+    }
+
+    // 随机添加1-2个额外的API调用
+    const remainingCalls = apiCallPool.filter(call => !selectedCalls.includes(call));
+    const extraCount = Math.floor(Math.random() * 2) + 1;
+    for (let i = 0; i < extraCount && remainingCalls.length > 0; i++) {
+      const randomIndex = Math.floor(Math.random() * remainingCalls.length);
+      selectedCalls.push(remainingCalls[randomIndex]);
+      remainingCalls.splice(randomIndex, 1);
+    }
+
+    return selectedCalls.sort((a, b) => a.delay - b.delay);
+  };
+
+  // 生成终端步骤
+  const generateTerminalSteps = (baseSteps: string[], apiCalls: ApiCall[]): TerminalStep[] => {
+    const terminalSteps: TerminalStep[] = [];
+    let apiCallIndex = 0;
+
+    // 添加初始命令
+    terminalSteps.push({
+      id: "init",
+      text: `$ a42z-engine --analyze --steps=${baseSteps.length}`,
+      type: "command",
+      duration: 0,
+    });
+
+    terminalSteps.push({
+      id: "start",
+      text: "Starting analysis pipeline...",
+      type: "command",
+      duration: 0,
+    });
+
+    // 交织步骤和API调用
+    baseSteps.forEach((step, index) => {
+      // 添加主要步骤
+      terminalSteps.push({
+        id: `step-${index}`,
+        text: step,
+        type: "command",
+        duration: Math.floor(Math.random() * 600) + 200, // 保持原有的毫秒计算逻辑用于动画
+      });
+
+      // 在适当位置插入API调用
+      if (apiCallIndex < apiCalls.length && Math.random() > 0.3) {
+        const apiCall = apiCalls[apiCallIndex];
+        terminalSteps.push({
+          id: `api-${apiCallIndex}`,
+          text: `Calling ${apiCall.title}...`,
+          type: "api-call",
+          duration: apiCall.duration,
+          apiCall: apiCall,
+        });
+        apiCallIndex++;
+      }
+    });
+
+    return terminalSteps;
+  };
+
+  useEffect(() => {
+    if (!isVisible) {
+      if (!hasStarted) {
+        setCompletedSteps([]);
+        setCurrentStep(null);
+        setTerminalSteps([]);
+        setVisibleApiCalls([]);
+      }
+      return;
+    }
+
+    if (!hasStarted) {
+      setHasStarted(true);
+      
+      // 生成API调用配置
+      const apiCalls = generateApiCalls(stepType);
+      
+      // 生成终端步骤
+      const generatedSteps = generateTerminalSteps(steps, apiCalls);
+      setTerminalSteps(generatedSteps);
+
+      // 开始处理步骤
+      let currentIndex = 0;
+      const processSteps = () => {
+        if (currentIndex < generatedSteps.length) {
+          const step = generatedSteps[currentIndex];
+          setCurrentStep(step.id);
+
+          // 如果是API调用，添加到可见列表
+          if (step.type === "api-call" && step.apiCall) {
+            setTimeout(() => {
+              setVisibleApiCalls(prev => [...prev, step.apiCall!]);
+            }, step.apiCall.delay);
+          }
+
+          setTimeout(() => {
+            setCompletedSteps(prev => [...prev, step.id]);
+            setCurrentStep(null);
+            currentIndex++;
+            processSteps();
+          }, step.duration);
+        } else {
+          setHasCompleted(true);
+        }
+      };
+
+      processSteps();
+    }
+  }, [isVisible, steps, hasStarted, stepType]);
+
+  // 如果已经开始过，即使isVisible为false也显示
+  if (!isVisible && !hasStarted) return null;
+
+  return (
+    <div className="space-y-4">
+      <Terminal className="w-full max-w-none bg-zinc-900/80 border-zinc-700">
+        {terminalSteps.map((step, index) => {
+          // 6种状态颜色系统
+          const getStatusColor = (stepId: string) => {
+            if (hasCompleted || completedSteps.includes(stepId)) {
+              return 'text-white'; // 完成状态使用白色
+            }
+            if (currentStep === stepId) {
+              return 'text-yellow-400'; // 进行中
+            }
+            
+            // 根据步骤类型和索引分配不同颜色
+            const stepIndex = terminalSteps.findIndex(s => s.id === stepId);
+            const colorIndex = stepIndex % 6;
+            const colors = [
+              'text-blue-400',   // 蓝色
+              'text-purple-400', // 紫色
+              'text-cyan-400',   // 青色
+              'text-pink-400',   // 粉色
+              'text-orange-400', // 橙色
+              'text-emerald-400' // 翠绿色
+            ];
+            return colors[colorIndex];
+          };
+
+          const getStatusIcon = (stepId: string) => {
+            if (hasCompleted || completedSteps.includes(stepId)) {
+              return '✓'; // 白色打勾
+            }
+            if (currentStep === stepId) {
+              return '⟳'; // 进行中
+            }
+            return '○'; // 等待中
+          };
+
+          return (
+            <AnimatedSpan 
+              key={step.id} 
+              delay={hasCompleted ? 0 : index * 50}
+              className={`font-mono text-xs ${getStatusColor(step.id)}`}
+            >
+              {getStatusIcon(step.id)} {step.text}
+              {currentStep === step.id && !hasCompleted && (
+                <TypingAnimation 
+                  delay={0} 
+                  duration={30}
+                  className="text-yellow-400 ml-2"
+                >
+                  ...processing
+                </TypingAnimation>
+              )}
+            </AnimatedSpan>
+          );
+        })}
+        
+
+
+        {(hasCompleted || completedSteps.length === terminalSteps.length) && (
+          <AnimatedSpan delay={hasCompleted ? 0 : 500} className="text-green-400 font-mono text-xs">
+            Analysis completed successfully! ✓
+          </AnimatedSpan>
+        )}
+      </Terminal>
+      
+      {/* API Calls List */}
+      <div className="bg-zinc-900/60 border border-zinc-700/50 rounded-lg p-4">
+        <div className="text-xs text-zinc-400 font-mono mb-3">API Calls & External Services</div>
+        <div className="space-y-2">
+          {visibleApiCalls.map((apiCall, index) => (
+            <motion.div
+              key={apiCall.id}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.1 }}
+            >
+              <ApiCallItem 
+                icon={apiCall.icon} 
+                title={apiCall.title} 
+                description={apiCall.description}
+                status={hasCompleted ? "completed" : "loading"}
+                duration={`${apiCall.duration.toFixed(2)}`}
+                tokenCost={apiCall.tokenCost}
+              />
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // Skeleton Components
 function SkeletonCard() {
@@ -127,59 +620,100 @@ function CitationTooltip({ citation, children }: { citation: Citation; children:
 // Expandable Card Component
 function WorkflowCard({ step, onToggle }: { step: WorkflowStep; onToggle: (id: string) => void }) {
   return (
-    <motion.div
-      layout
+    <div
       className="backdrop-blur-md rounded-lg border border-white/20 shadow-lg bg-[rgba(24,24,27,0.7)] overflow-visible"
     >
-      {["business-research", "hackathon-research", "ai-analysis", "scoring", "debate"].includes(step.id) ? (
+      {step.id === "code-quality-research" ? (
         <ShinyButton
-          onClick={() => onToggle(step.id)}
-          className="w-full p-4 flex items-center justify-between text-left hover:bg-white/5 transition-colors"
+          onClick={() => !step.isExpanded && onToggle(step.id)}
+          className={`w-full p-4 flex items-center justify-between text-left transition-colors ${!step.isExpanded ? 'hover:bg-white/5' : 'cursor-default'}`}
         >
           <div className="flex items-center gap-3">
             <div>
               <h3 className="text-white font-medium">{step.title}</h3>
             </div>
           </div>
-          <motion.div animate={{ rotate: step.isExpanded ? 90 : 0 }} transition={{ duration: 0.2 }}>
-            <ChevronRight className="w-5 h-5 text-zinc-400" />
-          </motion.div>
+          {!step.isExpanded && (
+            <motion.div animate={{ rotate: 0 }} transition={{ duration: 0.2 }}>
+              <ChevronRight className="w-5 h-5 text-zinc-400" />
+            </motion.div>
+          )}
+        </ShinyButton>
+      ) : ["technical-research", "business-research", "hackathon-research", "ai-analysis", "scoring", "debate"].includes(step.id) ? (
+        <ShinyButton
+          onClick={() => !step.isExpanded && onToggle(step.id)}
+          className={`w-full p-4 flex items-center justify-between text-left transition-colors ${!step.isExpanded ? 'hover:bg-white/5' : 'cursor-default'}`}
+        >
+          <div className="flex items-center gap-3">
+            <div>
+              <h3 className="text-white font-medium">{step.title}</h3>
+            </div>
+          </div>
+          {!step.isExpanded && (
+            <motion.div animate={{ rotate: 0 }} transition={{ duration: 0.2 }}>
+              <ChevronRight className="w-5 h-5 text-zinc-400" />
+            </motion.div>
+          )}
         </ShinyButton>
       ) : (
         <ShimmerButton
           borderRadius="0.25rem"
-          onClick={() => onToggle(step.id)}
-          className="w-full p-4 flex items-center justify-between text-left hover:bg-white/5 transition-colors"
+          onClick={() => !step.isExpanded && onToggle(step.id)}
+          className={`w-full p-4 flex items-center justify-between text-left transition-colors ${!step.isExpanded ? 'hover:bg-white/5' : 'cursor-default'}`}
         >
           <div className="flex items-center gap-3">
             <div>
               <h3 className="text-white font-medium">{step.title}</h3>
             </div>
           </div>
-          <motion.div animate={{ rotate: step.isExpanded ? 90 : 0 }} transition={{ duration: 0.2 }}>
-            <ChevronRight className="w-5 h-5 text-zinc-400" />
-          </motion.div>
+          {!step.isExpanded && (
+            <motion.div animate={{ rotate: 0 }} transition={{ duration: 0.2 }}>
+              <ChevronRight className="w-5 h-5 text-zinc-400" />
+            </motion.div>
+          )}
         </ShimmerButton>
       )}
 
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {step.isExpanded && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="border-t border-white/10"
+            transition={{ 
+              duration: 0.4,
+              ease: [0.4, 0.0, 0.2, 1], // 使用更平滑的缓动函数
+              opacity: { duration: 0.3 }
+            }}
+            className="border-t border-white/10 overflow-hidden"
           >
             <div className="p-4 space-y-4">
               {step.status === "loading" ? (
-                <SkeletonList />
+                <>
+                  {step.internalSteps && (
+                    <TerminalSteps 
+                      steps={step.internalSteps} 
+                      isVisible={((step.status as any) === "loading" || (step.status as any) === "completed")}
+                      stepType={step.id}
+                    />
+                  )}
+                  {!step.internalSteps && <SkeletonList />}
+                </>
               ) : (
                 <>
-                  {step.content && <div className="text-zinc-300 text-sm leading-relaxed">{step.content}</div>}
+                  {/* 显示Terminal步骤（如果存在且已完成） */}
+                  {step.internalSteps && step.status === "completed" && (
+                    <TerminalSteps 
+                      steps={step.internalSteps} 
+                      isVisible={true}
+                      stepType={step.id}
+                    />
+                  )}
+                  
+                  {step.content && <div className="text-zinc-300 text-sm leading-relaxed mt-4">{step.content}</div>}
 
                   {step.citations && step.citations.length > 0 && (
-                    <div className="space-y-2">
+                    <div className="space-y-2 mt-4">
                       <h4 className="text-zinc-400 text-xs font-medium uppercase tracking-wide">Sources</h4>
                       <div className="flex flex-wrap gap-2">
                         {step.citations.map((citation) => (
@@ -200,11 +734,25 @@ function WorkflowCard({ step, onToggle }: { step: WorkflowStep; onToggle: (id: s
                   )}
 
                   {step.substeps && (
-                    <div className="space-y-2">
+                    <div className="space-y-2 mt-4">
                       {step.substeps.map((substep) => (
                         <WorkflowCard key={substep.id} step={substep} onToggle={onToggle} />
                       ))}
                     </div>
+                  )}
+
+                  {/* 只在 code-quality-research 和 business-research 展示 API Calls & External Services + TerminalSteps */}
+                  {(["code-quality-research", "business-research"].includes(step.id) && step.internalSteps) && (
+                    <>
+                      <div className="mb-2 text-xs text-zinc-400 font-semibold uppercase tracking-wider">
+                        API Calls & External Services
+                      </div>
+                      <TerminalSteps 
+                        steps={step.internalSteps} 
+                        isVisible={((step.status as any) === "loading" || (step.status as any) === "completed")}
+                        stepType={step.id}
+                      />
+                    </>
                   )}
                 </>
               )}
@@ -212,7 +760,7 @@ function WorkflowCard({ step, onToggle }: { step: WorkflowStep; onToggle: (id: s
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.div>
+    </div>
   )
 }
 
@@ -252,7 +800,9 @@ function ProjectDescription({
 
   const handleSave = () => {
     if (tempDescription.trim()) {
-      onDescriptionChange(tempDescription.trim())
+      // 限制为100个字符
+      const limitedDescription = tempDescription.trim().slice(0, 100)
+      onDescriptionChange(limitedDescription)
       setIsEditing(false)
     }
   }
@@ -266,21 +816,40 @@ function ProjectDescription({
     <div className="space-y-4">
       {isEditing ? (
         <div className="space-y-3">
-          <textarea
-            value={tempDescription}
-            onChange={(e) => setTempDescription(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && e.metaKey) {
-                handleSave()
-              } else if (e.key === "Escape") {
-                handleCancel()
-              }
-            }}
-            placeholder="Describe your project in detail..."
-            className="w-full px-4 py-3 bg-zinc-900/50 text-white rounded-lg border border-white/20 focus:outline-none focus:ring-2 focus:ring-white-50 placeholder-zinc-500 resize-none"
-            rows={4}
-            autoFocus
-          />
+          <div className="space-y-2">
+            <textarea
+              value={tempDescription}
+              onChange={(e) => {
+                const value = e.target.value
+                // 限制输入为100个字符
+                if (value.length <= 100) {
+                  setTempDescription(value)
+                }
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && e.metaKey) {
+                  handleSave()
+                } else if (e.key === "Escape") {
+                  handleCancel()
+                }
+              }}
+              placeholder="Describe your project in detail... (max 100 characters)"
+              className="w-full px-4 py-3 bg-zinc-900/50 text-white rounded-lg border border-white/20 focus:outline-none focus:ring-2 focus:ring-white-50 placeholder-zinc-500 resize-none whitespace-pre-wrap break-words"
+              rows={4}
+              autoFocus
+              maxLength={100}
+            />
+            <div className="flex justify-between items-center text-xs">
+              <span className="text-zinc-400">
+                {tempDescription.length}/100 characters
+              </span>
+              {tempDescription.length > 90 && (
+                <span className={`text-sm ${tempDescription.length >= 100 ? 'text-red-400' : 'text-yellow-400'}`}>
+                  {tempDescription.length >= 100 ? 'Character limit reached!' : 'Almost at limit'}
+                </span>
+              )}
+            </div>
+          </div>
           <div className="flex gap-2">
             <ShimmerButton
               borderRadius="0.25rem"
@@ -304,7 +873,7 @@ function ProjectDescription({
             <div className="relative group">
               <TextAnimate
                 animation="blurIn"
-                className="text-lg text-white leading-relaxed"
+                className="text-lg text-white leading-relaxed whitespace-pre-wrap break-words overflow-hidden"
                 by="word"
               >
                 {description}
@@ -341,6 +910,24 @@ function ProjectDescription({
   )
 }
 
+// URL validation function
+function isValidGitHubUrl(url: string): boolean {
+  try {
+    const urlObj = new URL(url)
+    // 检查是否是GitHub域名
+    const isGitHubDomain = urlObj.hostname === 'github.com' || urlObj.hostname === 'www.github.com'
+    // 检查协议是否是http或https
+    const isValidProtocol = urlObj.protocol === 'http:' || urlObj.protocol === 'https:'
+    // 检查路径是否包含用户名和仓库名 (至少有两级路径)
+    const pathParts = urlObj.pathname.split('/').filter(part => part.length > 0)
+    const hasValidPath = pathParts.length >= 2
+    
+    return isGitHubDomain && isValidProtocol && hasValidPath
+  } catch {
+    return false
+  }
+}
+
 // GitHub Link Modal Component
 function GitHubLinkModal({
   isOpen,
@@ -352,17 +939,25 @@ function GitHubLinkModal({
   onSave: (link: string) => void
 }) {
   const [githubLink, setGithubLink] = useState("")
+  const [isValidUrl, setIsValidUrl] = useState(false)
+  const [showError, setShowError] = useState(false)
 
   const handleSave = () => {
-    if (githubLink.trim()) {
+    if (githubLink.trim() && isValidUrl) {
       onSave(githubLink.trim())
       setGithubLink("")
+      setIsValidUrl(false)
+      setShowError(false)
       onClose()
+    } else {
+      setShowError(true)
     }
   }
 
   const handleCancel = () => {
     setGithubLink("")
+    setIsValidUrl(false)
+    setShowError(false)
     onClose()
   }
 
@@ -388,7 +983,18 @@ function GitHubLinkModal({
               id="github-link"
               type="url"
               value={githubLink}
-              onChange={(e) => setGithubLink(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value
+                setGithubLink(value)
+                setShowError(false)
+                
+                if (value.trim()) {
+                  const valid = isValidGitHubUrl(value.trim())
+                  setIsValidUrl(valid)
+                } else {
+                  setIsValidUrl(false)
+                }
+              }}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   handleSave()
@@ -397,16 +1003,34 @@ function GitHubLinkModal({
                 }
               }}
               placeholder="https://github.com/username/repository"
-              className="w-full px-4 py-3 bg-zinc-900/50 text-white rounded-lg border border-white/20 focus:outline-none focus:ring-2 focus:ring-white-50 placeholder-zinc-500"
+              className={`w-full px-4 py-3 bg-zinc-900/50 text-white rounded-lg border focus:outline-none focus:ring-2 focus:ring-white-50 placeholder-zinc-500 ${
+                showError 
+                  ? 'border-red-500/50 focus:ring-red-500/50' 
+                  : isValidUrl 
+                    ? 'border-green-500/50 focus:ring-green-500/50' 
+                    : 'border-white/20'
+              }`}
               autoFocus
             />
+            {showError && (
+              <div className="text-red-400 text-sm mt-2 flex items-center gap-2">
+                <span>⚠️</span>
+                <span>Please enter a valid GitHub repository URL (e.g., https://github.com/username/repository)</span>
+              </div>
+            )}
+            {isValidUrl && !showError && (
+              <div className="text-green-400 text-sm mt-2 flex items-center gap-2">
+                <span>✅</span>
+                <span>Valid GitHub repository URL</span>
+              </div>
+            )}
           </div>
           
           <div className="flex gap-3">
             <ShimmerButton
               borderRadius="0.25rem"
               onClick={handleSave}
-              disabled={!githubLink.trim()}
+              disabled={!githubLink.trim() || !isValidUrl}
               className="flex-1 px-4 py-2 bg-green-600/20 hover:bg-green-600/30 disabled:bg-zinc-700/20 disabled:cursor-not-allowed text-green-400 border border-green-500/30"
             >
               Save
@@ -576,8 +1200,18 @@ export default function A42zJudgeWorkflow() {
   const [loginError, setLoginError] = useState("");
   const [loginFading, setLoginFading] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [isClient, setIsClient] = useState(false);
+  const [difyAnalysis, setDifyAnalysis] = useState<DifyResponse | null>(null);
+  const [isAnalyzingWithDify, setIsAnalyzingWithDify] = useState(false);
+  const [webhookStatus, setWebhookStatus] = useState<'idle' | 'configuring' | 'configured' | 'error'>('idle');
 
   useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isClient) return;
+    
     let ticking = false;
     let lastY = window.scrollY;
     const handleScroll = () => {
@@ -614,9 +1248,11 @@ export default function A42zJudgeWorkflow() {
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("touchstart", handleTouchStart);
     };
-  }, []);
+  }, [isClient]);
 
   useEffect(() => {
+    if (!isClient) return;
+    
     // 检查是否为localhost环境
     if (isLocalhost()) {
       // 在localhost环境下自动设置为已登录状态
@@ -624,9 +1260,32 @@ export default function A42zJudgeWorkflow() {
       setShowLogin(false);
       setLoginFading(false);
       setUserEmail('localhost@a42z.dev');
-      return;
     }
 
+    // 配置Dify webhook
+    const configureWebhook = async () => {
+      try {
+        setWebhookStatus('configuring');
+        const success = await difyAPI.configureWebhook();
+        setWebhookStatus(success ? 'configured' : 'error');
+        
+        if (success) {
+          console.log('Dify webhook configured successfully');
+        } else {
+          console.error('Failed to configure Dify webhook');
+        }
+      } catch (error) {
+        console.error('Error configuring webhook:', error);
+        setWebhookStatus('error');
+      }
+    };
+
+    configureWebhook();
+  }, [isClient]);
+
+  useEffect(() => {
+    if (!isClient) return;
+    
     const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
       if (session && session.user) {
         setIsLoggedIn(true);
@@ -652,7 +1311,7 @@ export default function A42zJudgeWorkflow() {
     return () => {
       listener?.subscription.unsubscribe();
     };
-  }, []);
+  }, [isClient]);
 
   // Initialize workflow steps
   useEffect(() => {
@@ -672,19 +1331,87 @@ export default function A42zJudgeWorkflow() {
         isExpanded: false,
       },
       {
-        id: "business-research",
-        title: "Business Intelligence Scraping",
-        description: "Finding related business ideas from tech news sources",
+        id: "technical-research",
+        title: "Technical Homeomorphism Researcher",
+        description: "Analyzing similar technical implementations from code repositories",
         status: "pending",
         isExpanded: false,
+        internalSteps: [
+          "Code Repository Discovery",
+          "Architecture Pattern Analysis",
+          "Technology Stack Mapping",
+          "Implementation Similarity Assessment",
+          "Code Quality Benchmarking",
+          "Performance Pattern Recognition",
+          "Security Implementation Review",
+          "Technical Innovation Evaluation"
+        ],
         citations: [
           {
             id: "1",
+            title: "Similar AI Healthcare Projects on GitHub",
+            url: "https://github.com",
+            source: "GitHub",
+          },
+          { id: "2", title: "Computer Vision Health Apps on GitLab", url: "https://gitlab.com", source: "GitLab" },
+        ],
+      },
+      {
+        id: "code-quality-research",
+        title: "Code Quality Researcher",
+        description: "Evaluating code quality, maintainability, and best practices",
+        status: "pending",
+        isExpanded: false,
+        internalSteps: [
+          "Static Code Analysis",
+          "Code Complexity Assessment",
+          "Test Coverage Evaluation",
+          "Documentation Quality Review",
+          "Code Style and Standards Check",
+          "Performance Optimization Analysis",
+          "Security Vulnerability Scan",
+          "Maintainability Index Calculation"
+        ],
+        citations: [
+          {
+            id: "3",
+            title: "Code Quality Metrics on SonarQube",
+            url: "https://sonarqube.org",
+            source: "SonarQube",
+          },
+          { id: "4", title: "GitHub Code Quality Analysis", url: "https://github.com/features/security", source: "GitHub Security" },
+          { id: "5", title: "Code Complexity Analysis", url: "https://github.com/features/code-quality", source: "GitHub Code Quality" },
+          { id: "6", title: "Security Vulnerability Database", url: "https://nvd.nist.gov", source: "NIST NVD" },
+        ],
+      },
+      {
+        id: "business-research",
+        title: "Business Potential Researcher",
+        description: "Finding related business ideas from tech news sources",
+        status: "pending",
+        isExpanded: false,
+        internalSteps: [
+          "Problem Defining and Planning",
+          "Domain Mapping and Scope Definition", 
+          "Competitive Benchmarking",
+          "Homogeneity Analysis",
+          "Performance Correlation Assessment",
+          "Value Creation Opportunity Identification",
+          "Risk and Saturation Analysis",
+          "Strategic Information Synthesis"
+        ],
+        citations: [
+          {
+            id: "7",
             title: "Similar AI Healthcare Startups Raise $50M",
             url: "https://techcrunch.com",
             source: "TechCrunch",
           },
-          { id: "2", title: "Mobile Health Apps Market Analysis", url: "https://crunchbase.com", source: "Crunchbase" },
+          { id: "8", title: "Mobile Health Apps Market Analysis", url: "https://crunchbase.com", source: "Crunchbase" },
+          { id: "9", title: "Y Combinator Healthcare Portfolio", url: "https://ycombinator.com/companies", source: "Y Combinator" },
+          { id: "10", title: "Healthcare AI Investment Trends", url: "https://crunchbase.com/industry/healthcare-ai", source: "Crunchbase" },
+          { id: "11", title: "TechCrunch Health Tech Coverage", url: "https://techcrunch.com/tag/healthtech", source: "TechCrunch" },
+          { id: "12", title: "Y Combinator Startup Database", url: "https://ycombinator.com/companies/healthcare", source: "Y Combinator" },
         ],
       },
       {
@@ -693,9 +1420,19 @@ export default function A42zJudgeWorkflow() {
         description: "Analyzing similar projects from hackathon platforms",
         status: "pending",
         isExpanded: false,
+        internalSteps: [
+          "Project Pattern Recognition",
+          "Technology Stack Analysis",
+          "Innovation Level Assessment",
+          "Implementation Complexity Evaluation",
+          "Market Fit Analysis",
+          "Scalability Potential Review",
+          "Technical Feasibility Check",
+          "Competitive Advantage Mapping"
+        ],
         citations: [
-          { id: "3", title: "AI Healthcare Projects on DevPost", url: "https://devpost.com", source: "DevPost" },
-          { id: "4", title: "Computer Vision Health Apps", url: "https://hackathon.com", source: "Hackathon.com" },
+          { id: "13", title: "AI Healthcare Projects on DevPost", url: "https://devpost.com", source: "DevPost" },
+          { id: "14", title: "Computer Vision Health Apps", url: "https://hackathon.com", source: "Hackathon.com" },
         ],
       },
       {
@@ -704,6 +1441,16 @@ export default function A42zJudgeWorkflow() {
         description: "a42z Engine analyzing your project comprehensively",
         status: "pending",
         isExpanded: false,
+        internalSteps: [
+          "Code Quality Assessment",
+          "Architecture Pattern Recognition",
+          "Algorithm Complexity Analysis",
+          "Data Pipeline Evaluation",
+          "Model Performance Review",
+          "Security Vulnerability Scan",
+          "Scalability Analysis",
+          "Integration Compatibility Check"
+        ],
       },
       {
         id: "scoring",
@@ -711,6 +1458,16 @@ export default function A42zJudgeWorkflow() {
         description: "Generating scores based on hackathon rubric",
         status: "pending",
         isExpanded: false,
+        internalSteps: [
+          "Technical Implementation Scoring",
+          "Innovation Level Evaluation",
+          "Market Potential Assessment",
+          "Presentation Quality Review",
+          "Code Quality Metrics",
+          "User Experience Analysis",
+          "Business Model Validation",
+          "Overall Score Calculation"
+        ],
       },
       {
         id: "debate",
@@ -718,13 +1475,23 @@ export default function A42zJudgeWorkflow() {
         description: "AI twins discussing and evaluating your project",
         status: "pending",
         isExpanded: false,
+        internalSteps: [
+          "Initial Project Review",
+          "Technical Feasibility Debate",
+          "Market Opportunity Discussion",
+          "Innovation Level Assessment",
+          "Risk Factor Analysis",
+          "Investment Potential Evaluation",
+          "Competitive Landscape Review",
+          "Final Consensus Building"
+        ],
       },
     ]
     setWorkflowSteps(steps)
   }, [])
 
   const handleStart = async () => {
-    if (!isLoggedIn && !isLocalhost()) {
+    if (!isLoggedIn && !(isClient && isLocalhost())) {
       setShowLogin(true);
       return;
     }
@@ -736,6 +1503,9 @@ export default function A42zJudgeWorkflow() {
     setWorkflowSteps((prev) =>
       prev.map((step) => (step.id === "keywords" ? { ...step, status: "loading", isExpanded: true } : step)),
     )
+
+    // 立即展开Upload Documents框
+    setCurrentStep(1)
 
     // Simulate project description analysis
     setTimeout(() => {
@@ -751,11 +1521,10 @@ export default function A42zJudgeWorkflow() {
             : step,
         ),
       )
-      setCurrentStep(1)
     }, 2000)
   }
 
-  const handleFileUpload = (file: File | string, type: UploadedFile["type"]) => {
+  const handleFileUpload = async (file: File | string, type: UploadedFile["type"]) => {
     const newFile: UploadedFile = {
       id: Date.now().toString(),
       name: typeof file === "string" ? file : file.name,
@@ -766,14 +1535,38 @@ export default function A42zJudgeWorkflow() {
     setFiles((prev) => [...prev.filter((f) => f.type !== type), newFile])
 
     // Simulate upload
-    setTimeout(() => {
-      setFiles((prev) => prev.map((f) => (f.id === newFile.id ? { ...f, status: "completed" } : f)))
+    setTimeout(async () => {
+      setFiles((prev) => {
+        const updatedFiles = prev.map((f) => (f.id === newFile.id ? { ...f, status: "completed" as const } : f));
+        
+        // 如果所有必需的文件都上传完成，自动开始分析
+        if (updatedFiles.filter((f) => f.status === "completed").length === 2) {
+          setTimeout(() => continueWorkflow(), 1000);
+        }
+        
+        return updatedFiles;
+      });
+
+      // 如果是GitHub仓库，调用Dify API进行分析
+      if (type === "github" && typeof file === "string") {
+        try {
+          setIsAnalyzingWithDify(true)
+          const analysis = await difyAPI.analyzeGitHubRepo(file)
+          setDifyAnalysis(analysis)
+          console.log('Dify Analysis Result:', analysis)
+        } catch (error) {
+          console.error('Dify API Error:', error)
+          // 即使Dify API失败，也不影响主流程
+        } finally {
+          setIsAnalyzingWithDify(false)
+        }
+      }
     }, 1500)
   }
 
   const handleStepToggle = (stepId: string) => {
     setWorkflowSteps((prev) =>
-      prev.map((step) => (step.id === stepId ? { ...step, isExpanded: !step.isExpanded } : step)),
+      prev.map((step) => (step.id === stepId ? { ...step, isExpanded: true } : step)),
     )
   }
 
@@ -784,10 +1577,15 @@ export default function A42zJudgeWorkflow() {
       const nextStep = workflowSteps[currentStep + 1]
 
       setWorkflowSteps((prev) =>
-        prev.map((step) => (step.id === nextStep.id ? { ...step, status: "loading", isExpanded: true } : step)),
+        prev.map((step) =>
+          step.id === nextStep.id
+            ? { ...step, status: "loading", isExpanded: true }
+            : { ...step, isExpanded: step.isExpanded },
+        )
       )
 
-      // Simulate processing time
+      // Simulate processing time - longer for steps with internal steps
+      const processingTime = nextStep.internalSteps ? 8000 : 3000;
       setTimeout(() => {
         setWorkflowSteps((prev) =>
           prev.map((step) =>
@@ -796,19 +1594,34 @@ export default function A42zJudgeWorkflow() {
                   ...step,
                   status: "completed",
                   content: getStepContent(nextStep.id),
+                  isExpanded: true,
                 }
-              : step,
+              : { ...step, isExpanded: step.isExpanded },
           ),
         )
         setCurrentStep((prev) => prev + 1)
-      }, 3000)
+        
+        // 自动进行下一步
+        if (currentStep + 1 < workflowSteps.length - 1) {
+          setTimeout(() => continueWorkflow(), 1000);
+        }
+      }, processingTime)
     }
   }
 
+
+
   const getStepContent = (stepId: string): string => {
     switch (stepId) {
+      case "technical-research":
+        if (difyAnalysis?.answer) {
+          return `Dify AI Analysis: ${difyAnalysis.answer.substring(0, 200)}...`
+        }
+        return "Discovered 23 similar technical implementations across GitHub and GitLab. Identified common architectural patterns and technology stacks in healthcare AI projects."
+      case "code-quality-research":
+        return "Code quality analysis completed. Maintainability Index: 85/100, Test Coverage: 78%, Security Score: 92/100, Performance Grade: A-, Code Complexity: Low, Documentation Quality: Excellent. Overall Code Quality: 8.7/10. Identified 3 minor security vulnerabilities and 5 optimization opportunities."
       case "business-research":
-        return "Found 15 related business ideas in the healthcare AI space. Market analysis shows strong investor interest with $2.3B funding in Q4 2024."
+        return "Business potential analysis completed. Found 15 related startups in healthcare AI space. Y Combinator portfolio shows 8 similar companies with average $12M funding. Crunchbase data indicates $2.3B total funding in Q4 2024. TechCrunch reports 23 new healthcare AI startups launched this quarter. Market opportunity: $45B by 2027."
       case "hackathon-research":
         return "Analyzed 47 similar hackathon projects. Common patterns include mobile-first approach and real-time processing capabilities."
       case "ai-analysis":
@@ -830,7 +1643,7 @@ export default function A42zJudgeWorkflow() {
     setIsLoggedIn(false);
     setShowLogin(true);
     setUserEmail(null);
-    if (typeof window !== 'undefined') {
+    if (isClient) {
       localStorage.clear();
       sessionStorage.clear();
     }
@@ -894,6 +1707,39 @@ export default function A42zJudgeWorkflow() {
           </MagicCard>
         </div>
       )}
+
+              {/* Dify Analysis Status */}
+        {isAnalyzingWithDify && (
+          <div className="fixed top-4 right-4 bg-zinc-900/95 border border-white/20 rounded-lg p-4 z-40">
+            <div className="flex items-center gap-2">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              <span className="text-sm text-white">Analyzing with Dify AI...</span>
+            </div>
+          </div>
+        )}
+
+        {/* Webhook Status */}
+        {webhookStatus !== 'idle' && (
+          <div className="fixed top-4 left-4 bg-zinc-900/95 border border-white/20 rounded-lg p-4 z-40">
+            <div className="flex items-center gap-2">
+              {webhookStatus === 'configuring' && (
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-400"></div>
+              )}
+              {webhookStatus === 'configured' && (
+                <div className="w-4 h-4 bg-green-400 rounded-full"></div>
+              )}
+              {webhookStatus === 'error' && (
+                <div className="w-4 h-4 bg-red-400 rounded-full"></div>
+              )}
+              <span className="text-sm text-white">
+                {webhookStatus === 'configuring' && 'Configuring Dify Webhook...'}
+                {webhookStatus === 'configured' && 'Dify Webhook Ready'}
+                {webhookStatus === 'error' && 'Webhook Configuration Failed'}
+              </span>
+            </div>
+          </div>
+        )}
+
       <div className="fixed inset-0 -z-20 w-full h-full bg-black" />
       <div className="fixed inset-0 -z-10 w-full h-full">
         <FlickeringGrid className="w-full h-full" color="#fff" />
@@ -963,7 +1809,7 @@ export default function A42zJudgeWorkflow() {
                   <h3 className="text-white font-medium mb-4">Project Description</h3>
                   <ProjectDescription 
                     description={projectDescription} 
-                    onDescriptionChange={setProjectDescription} 
+                    onDescriptionChange={setProjectDescription}
                   />
                 </motion.div>
 
@@ -976,21 +1822,11 @@ export default function A42zJudgeWorkflow() {
                   >
                     <h3 className="text-white font-medium mb-4">Upload Documents</h3>
                     <FileUploadSection files={files} onFileUpload={handleFileUpload} />
-                    {files.filter((f) => f.status === "completed").length === 2 && (
-                      <div className="mt-4 flex justify-end">
-                        <ShimmerButton
-                          borderRadius="0.25rem"
-                          onClick={continueWorkflow}
-                          className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
-                        >
-                          Continue Analysis
-                        </ShimmerButton>
-                      </div>
-                    )}
+
                   </motion.div>
                 )}
 
-                {/* Workflow Steps */}
+                                {/* Workflow Steps */}
                 {workflowSteps.slice(2).map((step, index) => (
                   <motion.div
                     key={step.id}
@@ -1007,20 +1843,7 @@ export default function A42zJudgeWorkflow() {
                       </div>
                     )}
 
-                    {/* Continue Button */}
-                    {step.status === "completed" &&
-                      currentStep === workflowSteps.findIndex((s) => s.id === step.id) &&
-                      currentStep < workflowSteps.length - 1 && (
-                        <div className="mt-4 flex justify-end">
-                          <ShimmerButton
-                            borderRadius="0.25rem"
-                            onClick={continueWorkflow}
-                            className="px-6 py-2 bg-white-600 hover:bg-white-700 text-white rounded-lg font-medium transition-colors"
-                          >
-                            Continue
-                          </ShimmerButton>
-                        </div>
-                      )}
+ 
                   </motion.div>
                 ))}
               </div>
