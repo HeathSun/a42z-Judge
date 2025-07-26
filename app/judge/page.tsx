@@ -137,12 +137,10 @@ function TerminalSteps({ steps, isVisible, stepType = "business-research" }: { s
       return parseFloat(`${base}.${decimal.toString().padStart(2, '0')}`);
     };
 
-    // 生成随机延迟时间（调整为10秒总时长，每行约0.5秒）
+    // 生成随机延迟时间（更大的扰动）
     const generateRandomDelay = (baseDelay: number) => {
-      // 基础延迟调整为500ms，确保20个调用总时长约10秒
-      const adjustedBaseDelay = 500;
-      const variation = Math.random() * 0.6 + 0.4; // 40%-100%的随机变化
-      return Math.floor(adjustedBaseDelay * variation);
+      const variation = Math.random() * 0.8 + 0.2; // 20%-100%的随机变化
+      return Math.floor(baseDelay * variation);
     };
 
                 // 扩展的API调用池
@@ -374,182 +372,70 @@ function TerminalSteps({ steps, isVisible, stepType = "business-research" }: { s
       },
     ];
 
-    // 根据步骤类型选择特定的API调用，确保至少20个调用
+    // 根据步骤类型选择特定的API调用
     let selectedCalls: ApiCall[] = [];
-    
-    // 基础调用（所有步骤都包含）
-    const baseCalls = [
-      apiCallPool.find(call => call.id === "github-api")!,
-      apiCallPool.find(call => call.id === "google-search")!,
-      apiCallPool.find(call => call.id === "database-query")!,
-      apiCallPool.find(call => call.id === "openai-gpt4-mini")!,
-      apiCallPool.find(call => call.id === "claude-sonnet")!,
-    ].filter(Boolean);
     
     switch (stepType) {
       case "technical-research":
         selectedCalls = [
-          ...baseCalls,
+          apiCallPool.find(call => call.id === "github-api")!,
           apiCallPool.find(call => call.id === "repointel")!,
+          apiCallPool.find(call => call.id === "claude-sonnet")!,
           apiCallPool.find(call => call.id === "security-scan")!,
-          apiCallPool.find(call => call.id === "sonarqube")!,
-          apiCallPool.find(call => call.id === "snyk")!,
-          apiCallPool.find(call => call.id === "lgtm")!,
-          apiCallPool.find(call => call.id === "codeclimate")!,
-          apiCallPool.find(call => call.id === "performance-test")!,
-          apiCallPool.find(call => call.id === "openai-gpt4")!,
-          apiCallPool.find(call => call.id === "claude-opus")!,
-          apiCallPool.find(call => call.id === "perplexity")!,
-          apiCallPool.find(call => call.id === "bing-search")!,
-          apiCallPool.find(call => call.id === "duckduckgo")!,
-          apiCallPool.find(call => call.id === "firecrawl")!,
-          apiCallPool.find(call => call.id === "apify")!,
-          apiCallPool.find(call => call.id === "devpost")!,
-          apiCallPool.find(call => call.id === "market-analysis")!,
         ].filter(Boolean);
         break;
         
       case "code-quality-research":
         selectedCalls = [
-          ...baseCalls,
           apiCallPool.find(call => call.id === "sonarqube")!,
-          apiCallPool.find(call => call.id === "snyk")!,
-          apiCallPool.find(call => call.id === "lgtm")!,
-          apiCallPool.find(call => call.id === "codeclimate")!,
-          apiCallPool.find(call => call.id === "performance-test")!,
-          apiCallPool.find(call => call.id === "security-scan")!,
-          apiCallPool.find(call => call.id === "openai-gpt4")!,
-          apiCallPool.find(call => call.id === "claude-opus")!,
-          apiCallPool.find(call => call.id === "repointel")!,
           apiCallPool.find(call => call.id === "github-api")!,
-          apiCallPool.find(call => call.id === "perplexity")!,
-          apiCallPool.find(call => call.id === "bing-search")!,
-          apiCallPool.find(call => call.id === "duckduckgo")!,
-          apiCallPool.find(call => call.id === "firecrawl")!,
-          apiCallPool.find(call => call.id === "apify")!,
-          apiCallPool.find(call => call.id === "devpost")!,
-          apiCallPool.find(call => call.id === "market-analysis")!,
+          apiCallPool.find(call => call.id === "performance-test")!,
+          apiCallPool.find(call => call.id === "openai-gpt4")!,
         ].filter(Boolean);
         break;
         
       case "business-research":
         selectedCalls = [
-          ...baseCalls,
           apiCallPool.find(call => call.id === "crunchbase")!,
           apiCallPool.find(call => call.id === "techcrunch")!,
           apiCallPool.find(call => call.id === "ycombinator")!,
-          apiCallPool.find(call => call.id === "pitchbook")!,
-          apiCallPool.find(call => call.id === "linkedin")!,
           apiCallPool.find(call => call.id === "perplexity")!,
-          apiCallPool.find(call => call.id === "bing-search")!,
-          apiCallPool.find(call => call.id === "duckduckgo")!,
-          apiCallPool.find(call => call.id === "google-search")!,
           apiCallPool.find(call => call.id === "market-analysis")!,
           apiCallPool.find(call => call.id === "openai-gpt4")!,
-          apiCallPool.find(call => call.id === "claude-opus")!,
-          apiCallPool.find(call => call.id === "firecrawl")!,
-          apiCallPool.find(call => call.id === "apify")!,
-          apiCallPool.find(call => call.id === "devpost")!,
-          apiCallPool.find(call => call.id === "security-scan")!,
-          apiCallPool.find(call => call.id === "performance-test")!,
         ].filter(Boolean);
         break;
         
       case "hackathon-research":
         selectedCalls = [
-          ...baseCalls,
           apiCallPool.find(call => call.id === "devpost")!,
           apiCallPool.find(call => call.id === "github-api")!,
           apiCallPool.find(call => call.id === "firecrawl")!,
           apiCallPool.find(call => call.id === "claude-sonnet")!,
-          apiCallPool.find(call => call.id === "perplexity")!,
-          apiCallPool.find(call => call.id === "bing-search")!,
-          apiCallPool.find(call => call.id === "duckduckgo")!,
-          apiCallPool.find(call => call.id === "apify")!,
-          apiCallPool.find(call => call.id === "openai-gpt4")!,
-          apiCallPool.find(call => call.id === "claude-opus")!,
-          apiCallPool.find(call => call.id === "security-scan")!,
-          apiCallPool.find(call => call.id === "performance-test")!,
-          apiCallPool.find(call => call.id === "market-analysis")!,
-          apiCallPool.find(call => call.id === "sonarqube")!,
-          apiCallPool.find(call => call.id === "snyk")!,
-          apiCallPool.find(call => call.id === "lgtm")!,
-          apiCallPool.find(call => call.id === "codeclimate")!,
         ].filter(Boolean);
         break;
         
       case "ai-analysis":
         selectedCalls = [
-          ...baseCalls,
           apiCallPool.find(call => call.id === "openai-gpt4")!,
           apiCallPool.find(call => call.id === "claude-opus")!,
           apiCallPool.find(call => call.id === "database-query")!,
           apiCallPool.find(call => call.id === "security-scan")!,
-          apiCallPool.find(call => call.id === "perplexity")!,
-          apiCallPool.find(call => call.id === "bing-search")!,
-          apiCallPool.find(call => call.id === "duckduckgo")!,
-          apiCallPool.find(call => call.id === "firecrawl")!,
-          apiCallPool.find(call => call.id === "apify")!,
-          apiCallPool.find(call => call.id === "github-api")!,
-          apiCallPool.find(call => call.id === "repointel")!,
-          apiCallPool.find(call => call.id === "sonarqube")!,
-          apiCallPool.find(call => call.id === "snyk")!,
-          apiCallPool.find(call => call.id === "lgtm")!,
-          apiCallPool.find(call => call.id === "codeclimate")!,
-          apiCallPool.find(call => call.id === "performance-test")!,
-          apiCallPool.find(call => call.id === "market-analysis")!,
-          apiCallPool.find(call => call.id === "devpost")!,
         ].filter(Boolean);
         break;
         
       case "scoring":
         selectedCalls = [
-          ...baseCalls,
           apiCallPool.find(call => call.id === "openai-gpt4-mini")!,
           apiCallPool.find(call => call.id === "database-query")!,
           apiCallPool.find(call => call.id === "market-analysis")!,
-          apiCallPool.find(call => call.id === "perplexity")!,
-          apiCallPool.find(call => call.id === "bing-search")!,
-          apiCallPool.find(call => call.id === "duckduckgo")!,
-          apiCallPool.find(call => call.id === "firecrawl")!,
-          apiCallPool.find(call => call.id === "apify")!,
-          apiCallPool.find(call => call.id === "github-api")!,
-          apiCallPool.find(call => call.id === "repointel")!,
-          apiCallPool.find(call => call.id === "sonarqube")!,
-          apiCallPool.find(call => call.id === "snyk")!,
-          apiCallPool.find(call => call.id === "lgtm")!,
-          apiCallPool.find(call => call.id === "codeclimate")!,
-          apiCallPool.find(call => call.id === "performance-test")!,
-          apiCallPool.find(call => call.id === "security-scan")!,
-          apiCallPool.find(call => call.id === "openai-gpt4")!,
-          apiCallPool.find(call => call.id === "claude-opus")!,
-          apiCallPool.find(call => call.id === "devpost")!,
         ].filter(Boolean);
         break;
         
       default:
-        // 默认选择20个通用API
+        // 默认选择一些通用API
         selectedCalls = [
-          ...baseCalls,
           apiCallPool.find(call => call.id === "google-search")!,
           apiCallPool.find(call => call.id === "database-query")!,
-          apiCallPool.find(call => call.id === "perplexity")!,
-          apiCallPool.find(call => call.id === "bing-search")!,
-          apiCallPool.find(call => call.id === "duckduckgo")!,
-          apiCallPool.find(call => call.id === "firecrawl")!,
-          apiCallPool.find(call => call.id === "apify")!,
-          apiCallPool.find(call => call.id === "github-api")!,
-          apiCallPool.find(call => call.id === "repointel")!,
-          apiCallPool.find(call => call.id === "sonarqube")!,
-          apiCallPool.find(call => call.id === "snyk")!,
-          apiCallPool.find(call => call.id === "lgtm")!,
-          apiCallPool.find(call => call.id === "codeclimate")!,
-          apiCallPool.find(call => call.id === "performance-test")!,
-          apiCallPool.find(call => call.id === "security-scan")!,
-          apiCallPool.find(call => call.id === "openai-gpt4")!,
-          apiCallPool.find(call => call.id === "claude-opus")!,
-          apiCallPool.find(call => call.id === "market-analysis")!,
-          apiCallPool.find(call => call.id === "devpost")!,
         ].filter(Boolean);
     }
 
@@ -823,21 +709,21 @@ function WorkflowCard({
     <div
       className="backdrop-blur-md rounded-lg border border-white/20 shadow-lg bg-[rgba(24,24,27,0.7)] overflow-visible"
     >
-      <ShimmerButton
-        borderRadius="0.25rem"
+        <ShimmerButton
+          borderRadius="0.25rem"
         onClick={() => !step.isExpanded && onToggle(step.id)}
         className={`w-full p-4 flex items-center justify-between text-left transition-colors ${!step.isExpanded ? 'hover:bg-white/5' : 'cursor-default'}`}
-      >
-        <div className="flex items-center gap-3">
-          <div>
-            <h3 className="text-white font-medium">{step.title}</h3>
+        >
+          <div className="flex items-center gap-3">
+            <div>
+              <h3 className="text-white font-medium">{step.title}</h3>
+            </div>
           </div>
-        </div>
         {!step.isExpanded && (
           <motion.div animate={{ rotate: 0 }} transition={{ duration: 0.2 }}>
             <ChevronRight className="w-5 h-5 text-zinc-400" />
           </motion.div>
-        )}
+      )}
       </ShimmerButton>
 
       <AnimatePresence mode="wait">
@@ -1058,7 +944,7 @@ function ProjectDescription({
                 className="absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity p-2 hover:bg-white/10 rounded"
               >
                 <FileText className="w-4 h-4 text-zinc-400" />
-              </button>
+          </button>
             </div>
           ) : (
             <div className="text-center py-8">
@@ -1154,7 +1040,7 @@ function GitHubLinkModal({
             <label htmlFor="github-link" className="block text-sm font-medium text-zinc-300 mb-2">
               Repository URL
             </label>
-            <input
+          <input
               id="github-link"
               type="url"
               value={githubLink}
@@ -1185,13 +1071,13 @@ function GitHubLinkModal({
                     ? 'border-green-500/50 focus:ring-green-500/50' 
                     : 'border-white/20'
               }`}
-              autoFocus
-            />
+            autoFocus
+          />
             {showError && (
               <div className="text-red-400 text-sm mt-2 flex items-center gap-2">
                 <span>⚠️</span>
                 <span>Please enter a valid GitHub repository URL (e.g., https://github.com/username/repository)</span>
-              </div>
+        </div>
             )}
             {isValidUrl && !showError && (
               <div className="text-green-400 text-sm mt-2 flex items-center gap-2">
@@ -1202,14 +1088,14 @@ function GitHubLinkModal({
           </div>
           
           <div className="flex gap-3">
-            <ShimmerButton
-              borderRadius="0.25rem"
+        <ShimmerButton
+          borderRadius="0.25rem"
               onClick={handleSave}
               disabled={!githubLink.trim() || !isValidUrl}
               className="flex-1 px-4 py-2 bg-green-600/20 hover:bg-green-600/30 disabled:bg-zinc-700/20 disabled:cursor-not-allowed text-green-400 border border-green-500/30"
-            >
+        >
               Save
-            </ShimmerButton>
+        </ShimmerButton>
             <ShimmerButton
               borderRadius="0.25rem"
               onClick={handleCancel}
@@ -1243,34 +1129,34 @@ function FileUploadSection({
     <>
       <div className="grid grid-cols-1 gap-4">
         <div className="relative">
-          <ShimmerButton
-            borderRadius="0.25rem"
+            <ShimmerButton
+              borderRadius="0.25rem"
             onClick={() => setShowGitHubModal(true)}
             className={`w-full p-4 rounded-lg border-2 border-dashed transition-all min-w-0 ${
               files.find(f => f.type === "github")
-                ? "border-green-400/50 bg-green-400/10"
-                : "border-white/20 hover:border-white/40 bg-zinc-800/30 hover:bg-zinc-700/30"
-            }`}
-          >
+                  ? "border-green-400/50 bg-green-400/10"
+                  : "border-white/20 hover:border-white/40 bg-zinc-800/30 hover:bg-zinc-700/30"
+              }`}
+            >
             <div className="flex flex-col items-center gap-2 w-full min-w-0">
               <Github className={`w-6 h-6 ${files.find(f => f.type === "github") ? "text-green-400" : "text-zinc-400"}`} />
               <div className="text-center w-full">
                 <div className={`font-medium ${files.find(f => f.type === "github") ? "text-green-300" : "text-zinc-300"} max-w-full truncate`}>
                   {files.find(f => f.type === "github")?.name || "GitHub Repository"}
                   <span className="text-red-400 ml-1">*</span>
-                </div>
+                  </div>
                 {files.find(f => f.type === "github") && (
                   <div className="text-xs text-zinc-400 mt-1 max-w-full truncate">
                     {files.find(f => f.type === "github")?.status === "uploading" && "Uploading..."}
                     {files.find(f => f.type === "github")?.status === "completed" && "Uploaded successfully"}
                     {files.find(f => f.type === "github")?.status === "error" && "Upload failed"}
-                  </div>
-                )}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          </ShimmerButton>
-        </div>
-      </div>
+            </ShimmerButton>
+          </div>
+    </div>
 
       <GitHubLinkModal
         isOpen={showGitHubModal}
@@ -1830,12 +1716,78 @@ export default function A42zJudgeWorkflow() {
         return updatedFiles;
       });
 
-      // 上传github url时自动触发所有评委分析
+      // 上传github url时调用Dify Chatflow API进行技术同质化分析
       if (type === "github" && typeof file === "string") {
-        // 延迟2秒后自动触发所有评委分析
-        setTimeout(() => {
-          triggerAllJudgeAnalyses(file);
-        }, 2000);
+        try {
+          setIsAnalyzingWithDify(true);
+          console.log('开始技术同质化分析:', file);
+          
+          // 初始化执行状态
+          const startTime = new Date();
+          const judgeConfig = difyAPI.getJudgeConfig('receive_data');
+          
+          const executionStatus: DifyExecutionStatus = {
+            judgeType: 'receive_data',
+            judgeName: judgeConfig?.name || 'Technical Analysis',
+            status: 'triggering',
+            startTime,
+            requestData: {
+              message: `请分析这个 GitHub 仓库的技术同质化程度：${file}`,
+              inputs: { repo_url: file },
+              apiKey: judgeConfig?.apiKey || ''
+            }
+          };
+          
+          setDifyExecutionStatuses(prev => ({
+            ...prev,
+            'receive_data': executionStatus
+          }));
+          setShowExecutionStatus(true);
+          
+          // 使用新的 Chatflow API 进行技术同质化分析
+          const result = await difyAPI.analyzeTechnicalHomogeneity(file);
+          setDifyAnalysis(result);
+          console.log('技术同质化分析完成:', result.answer);
+          
+          // 更新执行状态为成功
+          const endTime = new Date();
+          const duration = endTime.getTime() - startTime.getTime();
+          setDifyExecutionStatuses(prev => ({
+            ...prev,
+            'receive_data': {
+              ...prev['receive_data'],
+              status: 'success',
+              endTime,
+              duration,
+              responseData: result
+            }
+          }));
+          
+        } catch (error) {
+          console.error('Dify Chatflow API Error:', error);
+          // 设置错误状态
+          setDifyAnalysis({
+            answer: `分析失败: ${error instanceof Error ? error.message : '未知错误'}`,
+            conversation_id: '',
+            message_id: ''
+          });
+          
+          // 更新执行状态为错误
+          const endTime = new Date();
+          const duration = endTime.getTime() - (difyExecutionStatuses['receive_data']?.startTime?.getTime() || endTime.getTime());
+          setDifyExecutionStatuses(prev => ({
+            ...prev,
+            'receive_data': {
+              ...prev['receive_data'],
+              status: 'error',
+              endTime,
+              duration,
+              error: error instanceof Error ? error.message : '未知错误'
+            }
+          }));
+        } finally {
+          setIsAnalyzingWithDify(false);
+        }
       }
     }, 2000);
   };
@@ -2098,17 +2050,17 @@ export default function A42zJudgeWorkflow() {
             {isStarted && (
               <div className="space-y-4">
                 {/* Project Description Section */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="backdrop-blur-md rounded-lg p-6 border border-white/20 shadow-lg bg-[rgba(24,24,27,0.7)]"
-                >
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="backdrop-blur-md rounded-lg p-6 border border-white/20 shadow-lg bg-[rgba(24,24,27,0.7)]"
+                  >
                   <h3 className="text-white font-medium mb-4">Project Description</h3>
                   <ProjectDescription 
                     description={projectDescription} 
                     onDescriptionChange={setProjectDescription}
                   />
-                </motion.div>
+                  </motion.div>
 
                 {/* File Upload Section */}
                 {currentStep >= 1 && (
@@ -2120,11 +2072,30 @@ export default function A42zJudgeWorkflow() {
                     <h3 className="text-white font-medium mb-4">Upload Documents</h3>
                     <FileUploadSection files={files} onFileUpload={handleFileUpload} />
                     
-
+                    {/* 测试按钮 - 触发所有评委分析 */}
+                    {files.some(f => f.type === "github" && f.status === "completed") && (
+                      <div className="mt-4 pt-4 border-t border-white/20">
+                        <h4 className="text-white font-medium mb-3">Iterate through all</h4>
+                        <p className="text-zinc-400 text-sm mb-3">
+                          Click the button below to test the API call for all judges
+                        </p>
+                        <RainbowButton
+                          onClick={() => {
+                            const githubFile = files.find(f => f.type === "github");
+                            if (githubFile && typeof githubFile.name === "string") {
+                              triggerAllJudgeAnalyses(githubFile.name);
+                            }
+                          }}
+                          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
+                        >
+                          🧪 Iterate through all
+                        </RainbowButton>
+                      </div>
+                    )}
                   </motion.div>
                 )}
 
-                                {/* Workflow Steps */}
+                {/* Workflow Steps */}
                 {workflowSteps.slice(2).map((step, index) => (
                   <motion.div
                     key={step.id}
