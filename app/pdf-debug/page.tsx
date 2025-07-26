@@ -8,7 +8,7 @@ export default function PdfDebugPage() {
   const [uploadedFile, setUploadedFile] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
-  const [debugInfo, setDebugInfo] = useState<any>(null);
+  const [debugInfo, setDebugInfo] = useState<Record<string, unknown> | null>(null);
   const [bucketExists, setBucketExists] = useState<boolean | null>(null);
 
   // 检查用户登录状态
@@ -34,7 +34,7 @@ export default function PdfDebugPage() {
   // 检查 bucket 是否存在
   const checkBucket = async () => {
     try {
-      const { data, error } = await supabase.storage.listBuckets();
+      const { data } = await supabase.storage.listBuckets();
       console.log('Buckets:', data);
       
       const pdfBucket = data?.find(bucket => bucket.name === 'pdf');
@@ -55,7 +55,7 @@ export default function PdfDebugPage() {
   // 检查 bucket 内容
   const listBucketContents = async () => {
     try {
-      const { data, error } = await supabase.storage
+      const { data } = await supabase.storage
         .from('pdf')
         .list('', {
           limit: 100,

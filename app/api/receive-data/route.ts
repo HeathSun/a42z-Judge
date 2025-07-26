@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
 
 // Dify Workflow 数据接口
 interface DifyWorkflowData {

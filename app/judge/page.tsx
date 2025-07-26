@@ -1228,7 +1228,7 @@ export default function A42zJudgeWorkflow() {
     'ng': 'idle',
     'sam': 'idle'
   });
-  const [agentResults, setAgentResults] = useState<Record<string, any>>({});
+  const [agentResults, setAgentResults] = useState<Record<string, unknown>>({});
   const [repoUrl, setRepoUrl] = useState<string>('');
   const [repoPdf, setRepoPdf] = useState<string>('');
 
@@ -2059,7 +2059,7 @@ function AgentStatusDisplay({
   agentResults 
 }: { 
   agentStatus: Record<string, 'idle' | 'running' | 'completed' | 'error'>;
-  agentResults: Record<string, any>;
+  agentResults: Record<string, unknown>;
 }) {
   const agentNames = {
     'receive-data': 'Data Receiver',
@@ -2101,8 +2101,8 @@ function AgentStatusDisplay({
                 <span className={`text-sm ${getStatusColor(status)}`}>
                   {getStatusIcon(status)} {status}
                 </span>
-                {status === 'error' && agentResults[agentId]?.error && (
-                  <span className="text-xs text-red-400" title={agentResults[agentId].error}>
+                {status === 'error' && (
+                  <span className="text-xs text-red-400" title="Error occurred">
                     ⚠️
                   </span>
                 )}

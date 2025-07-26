@@ -3,7 +3,7 @@
 import { useState } from 'react';
 
 export default function AgentTestPage() {
-  const [testResult, setTestResult] = useState<any>(null);
+  const [testResult, setTestResult] = useState<Record<string, unknown> | null>(null);
   const [loading, setLoading] = useState(false);
 
   const testAllAgents = async () => {
