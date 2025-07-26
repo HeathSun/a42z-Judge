@@ -137,10 +137,12 @@ function TerminalSteps({ steps, isVisible, stepType = "business-research" }: { s
       return parseFloat(`${base}.${decimal.toString().padStart(2, '0')}`);
     };
 
-    // 生成随机延迟时间（更大的扰动）
+    // 生成随机延迟时间（调整为10秒总时长，每行约0.5秒）
     const generateRandomDelay = (baseDelay: number) => {
-      const variation = Math.random() * 0.8 + 0.2; // 20%-100%的随机变化
-      return Math.floor(baseDelay * variation);
+      // 基础延迟调整为500ms，确保20个调用总时长约10秒
+      const adjustedBaseDelay = 500;
+      const variation = Math.random() * 0.6 + 0.4; // 40%-100%的随机变化
+      return Math.floor(adjustedBaseDelay * variation);
     };
 
                 // 扩展的API调用池
@@ -372,70 +374,182 @@ function TerminalSteps({ steps, isVisible, stepType = "business-research" }: { s
       },
     ];
 
-    // 根据步骤类型选择特定的API调用
+    // 根据步骤类型选择特定的API调用，确保至少20个调用
     let selectedCalls: ApiCall[] = [];
+    
+    // 基础调用（所有步骤都包含）
+    const baseCalls = [
+      apiCallPool.find(call => call.id === "github-api")!,
+      apiCallPool.find(call => call.id === "google-search")!,
+      apiCallPool.find(call => call.id === "database-query")!,
+      apiCallPool.find(call => call.id === "openai-gpt4-mini")!,
+      apiCallPool.find(call => call.id === "claude-sonnet")!,
+    ].filter(Boolean);
     
     switch (stepType) {
       case "technical-research":
         selectedCalls = [
-          apiCallPool.find(call => call.id === "github-api")!,
+          ...baseCalls,
           apiCallPool.find(call => call.id === "repointel")!,
-          apiCallPool.find(call => call.id === "claude-sonnet")!,
           apiCallPool.find(call => call.id === "security-scan")!,
+          apiCallPool.find(call => call.id === "sonarqube")!,
+          apiCallPool.find(call => call.id === "snyk")!,
+          apiCallPool.find(call => call.id === "lgtm")!,
+          apiCallPool.find(call => call.id === "codeclimate")!,
+          apiCallPool.find(call => call.id === "performance-test")!,
+          apiCallPool.find(call => call.id === "openai-gpt4")!,
+          apiCallPool.find(call => call.id === "claude-opus")!,
+          apiCallPool.find(call => call.id === "perplexity")!,
+          apiCallPool.find(call => call.id === "bing-search")!,
+          apiCallPool.find(call => call.id === "duckduckgo")!,
+          apiCallPool.find(call => call.id === "firecrawl")!,
+          apiCallPool.find(call => call.id === "apify")!,
+          apiCallPool.find(call => call.id === "devpost")!,
+          apiCallPool.find(call => call.id === "market-analysis")!,
         ].filter(Boolean);
         break;
         
       case "code-quality-research":
         selectedCalls = [
+          ...baseCalls,
           apiCallPool.find(call => call.id === "sonarqube")!,
-          apiCallPool.find(call => call.id === "github-api")!,
+          apiCallPool.find(call => call.id === "snyk")!,
+          apiCallPool.find(call => call.id === "lgtm")!,
+          apiCallPool.find(call => call.id === "codeclimate")!,
           apiCallPool.find(call => call.id === "performance-test")!,
+          apiCallPool.find(call => call.id === "security-scan")!,
           apiCallPool.find(call => call.id === "openai-gpt4")!,
+          apiCallPool.find(call => call.id === "claude-opus")!,
+          apiCallPool.find(call => call.id === "repointel")!,
+          apiCallPool.find(call => call.id === "github-api")!,
+          apiCallPool.find(call => call.id === "perplexity")!,
+          apiCallPool.find(call => call.id === "bing-search")!,
+          apiCallPool.find(call => call.id === "duckduckgo")!,
+          apiCallPool.find(call => call.id === "firecrawl")!,
+          apiCallPool.find(call => call.id === "apify")!,
+          apiCallPool.find(call => call.id === "devpost")!,
+          apiCallPool.find(call => call.id === "market-analysis")!,
         ].filter(Boolean);
         break;
         
       case "business-research":
         selectedCalls = [
+          ...baseCalls,
           apiCallPool.find(call => call.id === "crunchbase")!,
           apiCallPool.find(call => call.id === "techcrunch")!,
           apiCallPool.find(call => call.id === "ycombinator")!,
+          apiCallPool.find(call => call.id === "pitchbook")!,
+          apiCallPool.find(call => call.id === "linkedin")!,
           apiCallPool.find(call => call.id === "perplexity")!,
+          apiCallPool.find(call => call.id === "bing-search")!,
+          apiCallPool.find(call => call.id === "duckduckgo")!,
+          apiCallPool.find(call => call.id === "google-search")!,
           apiCallPool.find(call => call.id === "market-analysis")!,
           apiCallPool.find(call => call.id === "openai-gpt4")!,
+          apiCallPool.find(call => call.id === "claude-opus")!,
+          apiCallPool.find(call => call.id === "firecrawl")!,
+          apiCallPool.find(call => call.id === "apify")!,
+          apiCallPool.find(call => call.id === "devpost")!,
+          apiCallPool.find(call => call.id === "security-scan")!,
+          apiCallPool.find(call => call.id === "performance-test")!,
         ].filter(Boolean);
         break;
         
       case "hackathon-research":
         selectedCalls = [
+          ...baseCalls,
           apiCallPool.find(call => call.id === "devpost")!,
           apiCallPool.find(call => call.id === "github-api")!,
           apiCallPool.find(call => call.id === "firecrawl")!,
           apiCallPool.find(call => call.id === "claude-sonnet")!,
+          apiCallPool.find(call => call.id === "perplexity")!,
+          apiCallPool.find(call => call.id === "bing-search")!,
+          apiCallPool.find(call => call.id === "duckduckgo")!,
+          apiCallPool.find(call => call.id === "apify")!,
+          apiCallPool.find(call => call.id === "openai-gpt4")!,
+          apiCallPool.find(call => call.id === "claude-opus")!,
+          apiCallPool.find(call => call.id === "security-scan")!,
+          apiCallPool.find(call => call.id === "performance-test")!,
+          apiCallPool.find(call => call.id === "market-analysis")!,
+          apiCallPool.find(call => call.id === "sonarqube")!,
+          apiCallPool.find(call => call.id === "snyk")!,
+          apiCallPool.find(call => call.id === "lgtm")!,
+          apiCallPool.find(call => call.id === "codeclimate")!,
         ].filter(Boolean);
         break;
         
       case "ai-analysis":
         selectedCalls = [
+          ...baseCalls,
           apiCallPool.find(call => call.id === "openai-gpt4")!,
           apiCallPool.find(call => call.id === "claude-opus")!,
           apiCallPool.find(call => call.id === "database-query")!,
           apiCallPool.find(call => call.id === "security-scan")!,
+          apiCallPool.find(call => call.id === "perplexity")!,
+          apiCallPool.find(call => call.id === "bing-search")!,
+          apiCallPool.find(call => call.id === "duckduckgo")!,
+          apiCallPool.find(call => call.id === "firecrawl")!,
+          apiCallPool.find(call => call.id === "apify")!,
+          apiCallPool.find(call => call.id === "github-api")!,
+          apiCallPool.find(call => call.id === "repointel")!,
+          apiCallPool.find(call => call.id === "sonarqube")!,
+          apiCallPool.find(call => call.id === "snyk")!,
+          apiCallPool.find(call => call.id === "lgtm")!,
+          apiCallPool.find(call => call.id === "codeclimate")!,
+          apiCallPool.find(call => call.id === "performance-test")!,
+          apiCallPool.find(call => call.id === "market-analysis")!,
+          apiCallPool.find(call => call.id === "devpost")!,
         ].filter(Boolean);
         break;
         
       case "scoring":
         selectedCalls = [
+          ...baseCalls,
           apiCallPool.find(call => call.id === "openai-gpt4-mini")!,
           apiCallPool.find(call => call.id === "database-query")!,
           apiCallPool.find(call => call.id === "market-analysis")!,
+          apiCallPool.find(call => call.id === "perplexity")!,
+          apiCallPool.find(call => call.id === "bing-search")!,
+          apiCallPool.find(call => call.id === "duckduckgo")!,
+          apiCallPool.find(call => call.id === "firecrawl")!,
+          apiCallPool.find(call => call.id === "apify")!,
+          apiCallPool.find(call => call.id === "github-api")!,
+          apiCallPool.find(call => call.id === "repointel")!,
+          apiCallPool.find(call => call.id === "sonarqube")!,
+          apiCallPool.find(call => call.id === "snyk")!,
+          apiCallPool.find(call => call.id === "lgtm")!,
+          apiCallPool.find(call => call.id === "codeclimate")!,
+          apiCallPool.find(call => call.id === "performance-test")!,
+          apiCallPool.find(call => call.id === "security-scan")!,
+          apiCallPool.find(call => call.id === "openai-gpt4")!,
+          apiCallPool.find(call => call.id === "claude-opus")!,
+          apiCallPool.find(call => call.id === "devpost")!,
         ].filter(Boolean);
         break;
         
       default:
-        // 默认选择一些通用API
+        // 默认选择20个通用API
         selectedCalls = [
+          ...baseCalls,
           apiCallPool.find(call => call.id === "google-search")!,
           apiCallPool.find(call => call.id === "database-query")!,
+          apiCallPool.find(call => call.id === "perplexity")!,
+          apiCallPool.find(call => call.id === "bing-search")!,
+          apiCallPool.find(call => call.id === "duckduckgo")!,
+          apiCallPool.find(call => call.id === "firecrawl")!,
+          apiCallPool.find(call => call.id === "apify")!,
+          apiCallPool.find(call => call.id === "github-api")!,
+          apiCallPool.find(call => call.id === "repointel")!,
+          apiCallPool.find(call => call.id === "sonarqube")!,
+          apiCallPool.find(call => call.id === "snyk")!,
+          apiCallPool.find(call => call.id === "lgtm")!,
+          apiCallPool.find(call => call.id === "codeclimate")!,
+          apiCallPool.find(call => call.id === "performance-test")!,
+          apiCallPool.find(call => call.id === "security-scan")!,
+          apiCallPool.find(call => call.id === "openai-gpt4")!,
+          apiCallPool.find(call => call.id === "claude-opus")!,
+          apiCallPool.find(call => call.id === "market-analysis")!,
+          apiCallPool.find(call => call.id === "devpost")!,
         ].filter(Boolean);
     }
 
@@ -1716,78 +1830,12 @@ export default function A42zJudgeWorkflow() {
         return updatedFiles;
       });
 
-      // 上传github url时调用Dify Chatflow API进行技术同质化分析
+      // 上传github url时自动触发所有评委分析
       if (type === "github" && typeof file === "string") {
-        try {
-          setIsAnalyzingWithDify(true);
-          console.log('开始技术同质化分析:', file);
-          
-          // 初始化执行状态
-          const startTime = new Date();
-          const judgeConfig = difyAPI.getJudgeConfig('receive_data');
-          
-          const executionStatus: DifyExecutionStatus = {
-            judgeType: 'receive_data',
-            judgeName: judgeConfig?.name || 'Technical Analysis',
-            status: 'triggering',
-            startTime,
-            requestData: {
-              message: `请分析这个 GitHub 仓库的技术同质化程度：${file}`,
-              inputs: { repo_url: file },
-              apiKey: judgeConfig?.apiKey || ''
-            }
-          };
-          
-          setDifyExecutionStatuses(prev => ({
-            ...prev,
-            'receive_data': executionStatus
-          }));
-          setShowExecutionStatus(true);
-          
-          // 使用新的 Chatflow API 进行技术同质化分析
-          const result = await difyAPI.analyzeTechnicalHomogeneity(file);
-          setDifyAnalysis(result);
-          console.log('技术同质化分析完成:', result.answer);
-          
-          // 更新执行状态为成功
-          const endTime = new Date();
-          const duration = endTime.getTime() - startTime.getTime();
-          setDifyExecutionStatuses(prev => ({
-            ...prev,
-            'receive_data': {
-              ...prev['receive_data'],
-              status: 'success',
-              endTime,
-              duration,
-              responseData: result
-            }
-          }));
-          
-        } catch (error) {
-          console.error('Dify Chatflow API Error:', error);
-          // 设置错误状态
-          setDifyAnalysis({
-            answer: `分析失败: ${error instanceof Error ? error.message : '未知错误'}`,
-            conversation_id: '',
-            message_id: ''
-          });
-          
-          // 更新执行状态为错误
-          const endTime = new Date();
-          const duration = endTime.getTime() - (difyExecutionStatuses['receive_data']?.startTime?.getTime() || endTime.getTime());
-          setDifyExecutionStatuses(prev => ({
-            ...prev,
-            'receive_data': {
-              ...prev['receive_data'],
-              status: 'error',
-              endTime,
-              duration,
-              error: error instanceof Error ? error.message : '未知错误'
-            }
-          }));
-        } finally {
-          setIsAnalyzingWithDify(false);
-        }
+        // 延迟2秒后自动触发所有评委分析
+        setTimeout(() => {
+          triggerAllJudgeAnalyses(file);
+        }, 2000);
       }
     }, 2000);
   };
@@ -2072,26 +2120,7 @@ export default function A42zJudgeWorkflow() {
                     <h3 className="text-white font-medium mb-4">Upload Documents</h3>
                     <FileUploadSection files={files} onFileUpload={handleFileUpload} />
                     
-                    {/* 测试按钮 - 触发所有评委分析 */}
-                    {files.some(f => f.type === "github" && f.status === "completed") && (
-                      <div className="mt-4 pt-4 border-t border-white/20">
-                        <h4 className="text-white font-medium mb-3">测试所有评委分析</h4>
-                        <p className="text-zinc-400 text-sm mb-3">
-                          点击下面的按钮来测试所有评委的 Dify Chatflow API 调用
-                        </p>
-                        <button
-                          onClick={() => {
-                            const githubFile = files.find(f => f.type === "github");
-                            if (githubFile && typeof githubFile.name === "string") {
-                              triggerAllJudgeAnalyses(githubFile.name);
-                            }
-                          }}
-                          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
-                        >
-                          🧪 测试所有评委分析
-                        </button>
-                      </div>
-                    )}
+
                   </motion.div>
                 )}
 
