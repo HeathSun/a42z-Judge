@@ -1596,15 +1596,15 @@ export default function A42zJudgeWorkflow() {
           setIsAnalyzingWithDify(true);
           const result = await difyAPI.triggerWorkflowWithRepoUrl(file);
           setDifyAnalysis(result); // result.answer 就是分析结果
+          console.log('GitHub analysis completed:', result.answer);
         } catch (error) {
-          // 错误处理
           console.error('Dify API Error:', error);
         } finally {
           setIsAnalyzingWithDify(false);
         }
       }
 
-      // 上传PDF文件到Supabase Storage
+      // 上传PDF文件到Supabase Storage并触发Dify分析
       if (type === "pdf" && typeof file === "object" && userEmail) {
         try {
           // 使用用户邮箱作为文件名
@@ -1626,6 +1626,18 @@ export default function A42zJudgeWorkflow() {
               .from('pdf')
               .getPublicUrl(fileName);
             console.log('PDF public URL:', urlData.publicUrl);
+            
+            // 触发PDF分析
+            try {
+              setIsAnalyzingWithDify(true);
+              const result = await difyAPI.triggerWorkflowWithPdf(urlData.publicUrl);
+              setDifyAnalysis(result); // result.answer 就是分析结果
+              console.log('PDF analysis completed:', result.answer);
+            } catch (error) {
+              console.error('PDF Dify API Error:', error);
+            } finally {
+              setIsAnalyzingWithDify(false);
+            }
           }
         } catch (error) {
           console.error('PDF upload error:', error);
