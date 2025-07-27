@@ -5,6 +5,7 @@ import React, { useState, useRef, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { ChevronRight, Github, FileText, Plus, ExternalLink, Loader2, Search, Brain, Database, Cpu, Code, Zap, Globe, TrendingUp, BarChart3, Shield, GitBranch, Webhook, Bot, Sparkles, Award, Building2, Activity, Linkedin, Eye, Thermometer } from "lucide-react"
 import { ShimmerButton } from "@/components/magicui/shimmer-button";
+import { RippleButton } from "@/components/magicui/ripple-button";
 import { FlickeringGrid } from "@/components/magicui/flickering-grid";
 import { RainbowButton } from "@/components/magicui/rainbow-button";
 import Link from "next/link";
@@ -700,11 +701,13 @@ function CitationTooltip({ citation, children }: { citation: Citation; children:
 function WorkflowCard({ 
   step, 
   onToggle, 
-  difyAnalysis 
+  difyAnalysis,
+  businessAnalysis
 }: { 
   step: WorkflowStep; 
   onToggle: (id: string) => void;
   difyAnalysis?: DifyResponse | null;
+  businessAnalysis?: DifyResponse | null;
 }) {
   return (
     <div
@@ -771,6 +774,29 @@ function WorkflowCard({
                       className="mt-6"
                     />
                   )}
+
+                  {/* 为 business-research 步骤添加 Business Analyst 分析显示 */}
+                  {step.id === "business-research" && step.status === "completed" && businessAnalysis && (
+                    <div className="mt-6">
+                      <div className="mb-4">
+                        <h4 className="text-white font-medium mb-2 flex items-center gap-2">
+                          <Building2 className="w-5 h-5 text-blue-400" />
+                          Business Analysis Results
+                        </h4>
+                        <div className="bg-zinc-900/50 border border-white/20 rounded-lg p-4">
+                          <Terminal className="max-h-64 overflow-y-auto">
+                            <TypingAnimation
+                              className="text-gray-300 text-sm leading-relaxed font-['Noto_Sans_SC']"
+                              duration={30}
+                              delay={300}
+                            >
+                              {businessAnalysis.answer}
+                            </TypingAnimation>
+                          </Terminal>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   
                   {step.content && <div className="text-zinc-300 text-sm leading-relaxed mt-4">{step.content}</div>}
 
@@ -798,7 +824,7 @@ function WorkflowCard({
                   {step.substeps && (
                     <div className="space-y-2 mt-4">
                       {step.substeps.map((substep) => (
-                        <WorkflowCard key={substep.id} step={substep} onToggle={onToggle} difyAnalysis={difyAnalysis} />
+                        <WorkflowCard key={substep.id} step={substep} onToggle={onToggle} difyAnalysis={difyAnalysis} businessAnalysis={businessAnalysis} />
                       ))}
                     </div>
                   )}
@@ -1243,6 +1269,9 @@ export default function A42zJudgeWorkflow() {
     timestamp?: string;
   }>>([]);
 
+  // Business Analyst 分析结果状态
+  const [businessAnalysis, setBusinessAnalysis] = useState<DifyResponse | null>(null);
+
   useEffect(() => {
     setIsClient(true);
   }, []);
@@ -1503,6 +1532,8 @@ export default function A42zJudgeWorkflow() {
         switch (judgeType) {
           case 'business':
             result = await difyAPI.analyzeBusinessPotential(githubUrl);
+            // Business Analyst 的输出单独处理，不加入评委评论
+            setBusinessAnalysis(result);
             break;
           case 'sam':
             result = await difyAPI.getSamAnalysis(githubUrl);
@@ -1536,43 +1567,44 @@ export default function A42zJudgeWorkflow() {
         
         console.log(`${judgeConfig.name} 分析完成:`, result.answer);
         
-        // 更新评委评论
-        const judgeAvatarMap: Record<string, string> = {
-          'paul': "https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img//paul.png",
-          'ng': "https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img//andrew.png",
-          'sam': "https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img//sam.png",
-          'li': "https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img//feifei.png"
-        };
-        
-        const judgeNameMap: Record<string, string> = {
-          'paul': 'Paul Graham',
-          'ng': 'Andrew Ng',
-          'sam': 'Sam Altman',
-          'li': 'Feifei Li',
-          'business': 'Business Analyst'
-        };
-        
-        const newComment = {
-          id: `${judgeType}-${Date.now()}`,
-          name: judgeNameMap[judgeType] || judgeConfig.name,
-          avatar: judgeAvatarMap[judgeType] || judgeAvatarMap['paul'],
-          comment: result.answer,
-          status: 'completed' as const,
-          timestamp: new Date().toLocaleTimeString()
-        };
-        
-        setJudgeComments(prev => {
-          const existingIndex = prev.findIndex(c => c.name === newComment.name);
-          if (existingIndex >= 0) {
-            // 更新现有评论
-            const updated = [...prev];
-            updated[existingIndex] = newComment;
-            return updated;
-          } else {
-            // 添加新评论
-            return [...prev, newComment];
-          }
-        });
+        // 只为人类评委更新评论（排除 Business Analyst）
+        if (judgeType !== 'business') {
+          const judgeAvatarMap: Record<string, string> = {
+            'paul': "https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img//paul.png",
+            'ng': "https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img//andrew.png",
+            'sam': "https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img//sam.png",
+            'li': "https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img//feifei.png"
+          };
+          
+          const judgeNameMap: Record<string, string> = {
+            'paul': 'Paul Graham',
+            'ng': 'Andrew Ng',
+            'sam': 'Sam Altman',
+            'li': 'Feifei Li'
+          };
+          
+          const newComment = {
+            id: `${judgeType}-${Date.now()}`,
+            name: judgeNameMap[judgeType] || judgeConfig.name,
+            avatar: judgeAvatarMap[judgeType] || judgeAvatarMap['paul'],
+            comment: result.answer,
+            status: 'completed' as const,
+            timestamp: new Date().toLocaleTimeString()
+          };
+          
+          setJudgeComments(prev => {
+            const existingIndex = prev.findIndex(c => c.name === newComment.name);
+            if (existingIndex >= 0) {
+              // 更新现有评论
+              const updated = [...prev];
+              updated[existingIndex] = newComment;
+              return updated;
+            } else {
+              // 添加新评论
+              return [...prev, newComment];
+            }
+          });
+        }
         
       } catch (error) {
         console.error(`${judgeType} 分析失败:`, error);
@@ -1947,17 +1979,17 @@ export default function A42zJudgeWorkflow() {
                         <p className="text-zinc-400 text-sm mb-3">
                           Click the button below to test the Dify Chatflow API call for all judges
                         </p>
-                        <RainbowButton
+                        <RippleButton
                           onClick={() => {
                             const githubFile = files.find(f => f.type === "github");
                             if (githubFile && typeof githubFile.name === "string") {
                               triggerAllJudgeAnalyses(githubFile.name);
                             }
                           }}
-                          className="text-sm font-medium"
+                          className="text-sm font-medium bg-zinc-800 hover:bg-zinc-700 text-white border-white/20"
                         >
                           🧪 Test All
-                        </RainbowButton>
+                        </RippleButton>
                       </div>
                     )}
                   </motion.div>
@@ -1971,7 +2003,7 @@ export default function A42zJudgeWorkflow() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.1 }}
                   >
-                    <WorkflowCard step={step} onToggle={handleStepToggle} difyAnalysis={difyAnalysis} />
+                    <WorkflowCard step={step} onToggle={handleStepToggle} difyAnalysis={difyAnalysis} businessAnalysis={businessAnalysis} />
 
                     {/* AI Twins Debate */}
                     {step.id === "debate" && step.status === "completed" && step.isExpanded && (
