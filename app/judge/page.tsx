@@ -22,6 +22,7 @@ import { ApiCallItem } from '@/components/magicui/api-call-item';
 import { LucideIcon } from "lucide-react";
 import { DifyAnalysisDisplay } from '@/components/magicui/dify-analysis-display';
 import { JudgeComments } from '@/components/magicui/judge-comments';
+import { ScorePanel } from '@/components/magicui/score-panel';
 
 // Types
 
@@ -1242,6 +1243,9 @@ export default function A42zJudgeWorkflow() {
     status: 'pending' | 'completed' | 'error';
     timestamp?: string;
   }>>([]);
+  
+  // 总分面板状态管理
+  const [scoreData, setScoreData] = useState<Record<string, unknown> | null>(null);
 
   useEffect(() => {
     setIsClient(true);
@@ -1468,131 +1472,141 @@ export default function A42zJudgeWorkflow() {
 
   // 手动触发所有评委分析的测试函数
   const triggerAllJudgeAnalyses = async (githubUrl: string) => {
-    const judgeTypes = ['business', 'sam', 'li', 'ng', 'paul'];
+    const judgeTypes = ['sam', 'li', 'ng', 'paul'];
     
-    for (const judgeType of judgeTypes) {
-      try {
-        const startTime = new Date();
-        const judgeConfig = difyAPI.getJudgeConfig(judgeType);
-        
-        if (!judgeConfig) continue;
-        
-        // 构建输入参数
-        const inputs: Record<string, unknown> = { repo_url: githubUrl };
-        
-        // 初始化执行状态
-        const executionStatus: DifyExecutionStatus = {
-          judgeType,
-          judgeName: judgeConfig.name,
-          status: 'triggering',
-          startTime,
-          requestData: {
-            message: `请从 ${judgeConfig.name} 的角度分析这个项目：${githubUrl}`,
-            inputs,
-            apiKey: judgeConfig.apiKey
-          }
-        };
-        
-        setDifyExecutionStatuses(prev => ({
-          ...prev,
-          [judgeType]: executionStatus
-        }));
-        
-        // 调用对应的分析方法
-        let result: DifyResponse;
-        switch (judgeType) {
-          case 'business':
-            result = await difyAPI.analyzeBusinessPotential(githubUrl);
-            break;
-          case 'sam':
-            result = await difyAPI.getSamAnalysis(githubUrl);
-            break;
-          case 'li':
-            result = await difyAPI.getLiAnalysis(githubUrl);
-            break;
-          case 'ng':
-            result = await difyAPI.getNgAnalysis(githubUrl);
-            break;
-          case 'paul':
-            result = await difyAPI.getPaulAnalysis(githubUrl);
-            break;
-          default:
-            throw new Error(`Unknown judge type: ${judgeType}`);
-        }
-        
-        // 更新执行状态为成功
-        const endTime = new Date();
-        const duration = endTime.getTime() - startTime.getTime();
-        setDifyExecutionStatuses(prev => ({
-          ...prev,
-          [judgeType]: {
-            ...prev[judgeType],
-            status: 'success',
-            endTime,
-            duration,
-            responseData: result
-          }
-        }));
-        
-        console.log(`${judgeConfig.name} 分析完成:`, result.answer);
-        
-        // 更新评委评论
-        const judgeAvatarMap: Record<string, string> = {
-          'paul': "https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img//paul.png",
-          'ng': "https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img//andrew.png",
-          'sam': "https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img//sam.png",
-          'li': "https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img//feifei.png"
-        };
-        
-        const judgeNameMap: Record<string, string> = {
-          'paul': 'Paul Graham',
-          'ng': 'Andrew Ng',
-          'sam': 'Sam Altman',
-          'li': 'Feifei Li',
-          'business': 'Business Analyst'
-        };
-        
-        const newComment = {
-          id: `${judgeType}-${Date.now()}`,
-          name: judgeNameMap[judgeType] || judgeConfig.name,
-          avatar: judgeAvatarMap[judgeType] || judgeAvatarMap['paul'],
-          comment: result.answer,
-          status: 'completed' as const,
-          timestamp: new Date().toLocaleTimeString()
-        };
-        
-        setJudgeComments(prev => {
-          const existingIndex = prev.findIndex(c => c.name === newComment.name);
-          if (existingIndex >= 0) {
-            // 更新现有评论
-            const updated = [...prev];
-            updated[existingIndex] = newComment;
-            return updated;
-          } else {
-            // 添加新评论
-            return [...prev, newComment];
-          }
-        });
-        
-      } catch (error) {
-        console.error(`${judgeType} 分析失败:`, error);
-        
-        // 更新执行状态为错误
-        const endTime = new Date();
-        const duration = endTime.getTime() - (difyExecutionStatuses[judgeType]?.startTime?.getTime() || endTime.getTime());
-        setDifyExecutionStatuses(prev => ({
-          ...prev,
-          [judgeType]: {
-            ...prev[judgeType],
-            status: 'error',
-            endTime,
-            duration,
-            error: error instanceof Error ? error.message : '未知错误'
-          }
-        }));
-      }
+    // 并行执行所有评委分析和总分获取
+    const analysisPromises = [
+      ...judgeTypes.map(judgeType => analyzeWithJudge(judgeType, githubUrl)),
+      getScoreData(githubUrl)
+    ];
+    
+    try {
+      await Promise.all(analysisPromises);
+      console.log('✅ All judge analyses and score data completed');
+    } catch (error) {
+      console.error('❌ Some analyses failed:', error);
     }
   };
+
+  // 单个评委分析函数
+  const analyzeWithJudge = async (judgeType: string, githubUrl: string) => {
+    try {
+      const startTime = new Date();
+      const judgeConfig = difyAPI.getJudgeConfig(judgeType);
+      
+      if (!judgeConfig) return;
+      
+      // 构建输入参数
+      const inputs: Record<string, unknown> = { repo_url: githubUrl };
+      
+      // 初始化执行状态
+      const executionStatus: DifyExecutionStatus = {
+        judgeType,
+        judgeName: judgeConfig.name,
+        status: 'triggering',
+        startTime,
+        requestData: {
+          message: `请从 ${judgeConfig.name} 的角度分析这个项目：${githubUrl}`,
+          inputs,
+          apiKey: judgeConfig.apiKey
+        }
+      };
+      
+      setDifyExecutionStatuses(prev => ({
+        ...prev,
+        [judgeType]: executionStatus
+      }));
+      
+      // 调用对应的分析方法
+      let result: DifyResponse;
+      switch (judgeType) {
+        case 'sam':
+          result = await difyAPI.getSamAnalysis(githubUrl);
+          break;
+        case 'li':
+          result = await difyAPI.getLiAnalysis(githubUrl);
+          break;
+        case 'ng':
+          result = await difyAPI.getNgAnalysis(githubUrl);
+          break;
+        case 'paul':
+          result = await difyAPI.getPaulAnalysis(githubUrl);
+          break;
+        default:
+          throw new Error(`Unknown judge type: ${judgeType}`);
+      }
+      
+      // 更新执行状态为成功
+      const endTime = new Date();
+      const duration = endTime.getTime() - startTime.getTime();
+      setDifyExecutionStatuses(prev => ({
+        ...prev,
+        [judgeType]: {
+          ...prev[judgeType],
+          status: 'success',
+          endTime,
+          duration,
+          responseData: result
+        }
+      }));
+      
+      console.log(`${judgeConfig.name} 分析完成:`, result.answer);
+      
+      // 更新评委评论
+      const judgeAvatarMap: Record<string, string> = {
+        'paul': "https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img//paul.png",
+        'ng': "https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img//andrew.png",
+        'sam': "https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img//sam.png",
+        'li': "https://cslplhzfcfvzsivsgrpc.supabase.co/storage/v1/object/public/img//feifei.png"
+      };
+      
+      const judgeNameMap: Record<string, string> = {
+        'paul': 'Paul Graham',
+        'ng': 'Andrew Ng',
+        'sam': 'Sam Altman',
+        'li': 'Feifei Li'
+      };
+      
+      const newComment = {
+        id: `${judgeType}-${Date.now()}`,
+        name: judgeNameMap[judgeType] || judgeConfig.name,
+        avatar: judgeAvatarMap[judgeType] || judgeAvatarMap['paul'],
+        comment: result.answer,
+        status: 'completed' as const,
+        timestamp: new Date().toLocaleTimeString()
+      };
+      
+      setJudgeComments(prev => {
+        const existingIndex = prev.findIndex(c => c.name === newComment.name);
+        if (existingIndex >= 0) {
+          // 更新现有评论
+          const updated = [...prev];
+          updated[existingIndex] = newComment;
+          return updated;
+        } else {
+          // 添加新评论
+          return [...prev, newComment];
+        }
+      });
+      
+    } catch (error) {
+      console.error(`${judgeType} 分析失败:`, error);
+      
+      // 更新执行状态为错误
+      const endTime = new Date();
+      const duration = endTime.getTime() - (difyExecutionStatuses[judgeType]?.startTime?.getTime() || endTime.getTime());
+      setDifyExecutionStatuses(prev => ({
+        ...prev,
+        [judgeType]: {
+          ...prev[judgeType],
+          status: 'error',
+          endTime,
+          duration,
+          error: error instanceof Error ? error.message : '未知错误'
+        }
+      }));
+    }
+
 
   const handleFileUpload = async (file: File | string, type: UploadedFile["type"]) => {
     const newFile: UploadedFile = {
@@ -1761,6 +1775,36 @@ export default function A42zJudgeWorkflow() {
     if (isClient) {
       localStorage.clear();
       sessionStorage.clear();
+    }
+  };
+
+  // 获取总分数据
+  const getScoreData = async (githubUrl: string) => {
+    try {
+      console.log('🔄 Getting score data...');
+      
+      const response = await fetch('/api/score', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ repo_url: githubUrl }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Score API Error: ${response.status}`);
+      }
+
+      const result = await response.json();
+      if (result.success) {
+        setScoreData(result.data);
+        console.log('✅ Score data received');
+      } else {
+        throw new Error(result.error || 'Failed to get score data');
+      }
+    } catch (error) {
+      console.error('❌ Score API error:', error);
+      setScoreData(null);
     }
   };
 
@@ -1999,6 +2043,17 @@ export default function A42zJudgeWorkflow() {
           />
         </div>
       )}
+
+      {/* 总分面板显示区域 */}
+      {scoreData && (
+        <div className="container mx-auto px-4 py-8">
+          <ScorePanel 
+            scoreData={scoreData}
+            isVisible={true}
+            className="max-w-6xl mx-auto"
+          />
+        </div>
+      )}
       {/* 修改右上角 avatar 的定位和样式 */}
       <div className="fixed top-8 right-8 z-50">
         {isLoggedIn && (
@@ -2006,7 +2061,7 @@ export default function A42zJudgeWorkflow() {
         )}
       </div>
     </>
-  )
+  );
 }
 
 function AccountDropdown({ userEmail, onLogout }: { userEmail: string | null, onLogout: () => void }) {

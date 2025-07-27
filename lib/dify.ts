@@ -30,11 +30,7 @@ const JUDGE_CONFIGS: Record<string, JudgeConfig> = {
     apiKey: 'app-dhIC2LKWiF6txqsziyaAPvQy',
     description: '技术同质化分析'
   },
-  business: {
-    name: 'Business Analysis',
-    apiKey: 'app-TNEgFjsjZlRSVLaMFtBOOMlr',
-    description: '商业潜力分析'
-  },
+
   sam: {
     name: 'Sam Altman',
     apiKey: 'app-69wonwSInJYTocYMba4OhuYo',
@@ -121,19 +117,7 @@ class DifyAPI {
     );
   }
 
-  // 商业潜力分析
-  async analyzeBusinessPotential(githubUrl: string): Promise<DifyResponse> {
-    const inputs: Record<string, unknown> = { 
-      repo_url: githubUrl,
-      project_name: githubUrl.split('/').pop() || 'Unknown Project',
-      project_description: `GitHub repository: ${githubUrl}`,
-      analysis_type: 'business_potential'
-    };
-    return this.sendMessageToJudge('business', 
-      `请分析这个项目的商业潜力：${githubUrl}`, 
-      inputs
-    );
-  }
+
 
   // Sam Altman 分析
   async getSamAnalysis(githubUrl: string): Promise<DifyResponse> {
