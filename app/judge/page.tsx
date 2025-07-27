@@ -1255,7 +1255,7 @@ export default function A42zJudgeWorkflow() {
   const [difyAnalysis, setDifyAnalysis] = useState<DifyResponse | null>(null);
   const [isAnalyzingWithDify, setIsAnalyzingWithDify] = useState(false);
   const [webhookStatus, setWebhookStatus] = useState<'idle' | 'configuring' | 'configured' | 'error'>('idle');
-  const [showPreLaunchModal, setShowPreLaunchModal] = useState(false);
+  const [showServiceUpdateModal, setShowServiceUpdateModal] = useState(false);
   
   // Dify 执行状态管理
   const [difyExecutionStatuses, setDifyExecutionStatuses] = useState<Record<string, DifyExecutionStatus>>({});
@@ -1276,23 +1276,6 @@ export default function A42zJudgeWorkflow() {
   useEffect(() => {
     setIsClient(true);
   }, []);
-
-  // ESC键关闭Pre-Launch弹框
-  useEffect(() => {
-    const handleEscKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && showPreLaunchModal) {
-        setShowPreLaunchModal(false);
-      }
-    };
-
-    if (showPreLaunchModal) {
-      document.addEventListener('keydown', handleEscKey);
-    }
-
-    return () => {
-      document.removeEventListener('keydown', handleEscKey);
-    };
-  }, [showPreLaunchModal]);
 
   useEffect(() => {
     if (!isClient) return;
@@ -1856,7 +1839,7 @@ export default function A42zJudgeWorkflow() {
               <div className="flex flex-col gap-2 w-full mt-4">
                 <RainbowButton
                   type="button"
-                  onClick={() => setShowPreLaunchModal(true)}
+                  onClick={() => setShowServiceUpdateModal(true)}
                   className="w-full"
                 >
                   <span className="inline-flex items-center gap-2">
@@ -1870,65 +1853,27 @@ export default function A42zJudgeWorkflow() {
         </div>
       )}
 
-      {/* Pre-Launch Modal */}
-      {showPreLaunchModal && (
-        <div 
-          className="fixed inset-0 z-[300] flex items-center justify-center bg-black/60 backdrop-blur-sm"
-          onClick={() => setShowPreLaunchModal(false)}
-        >
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
-            className="bg-zinc-900/95 border border-white/20 rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl relative"
-            onClick={(e) => e.stopPropagation()}
+      {/* Service Update Modal */}
+      {showServiceUpdateModal && (
+        <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setShowServiceUpdateModal(false)}>
+          <div
+            className="rounded-2xl bg-black/80 shadow-2xl border border-white/20 px-8 py-6 max-w-md w-full mx-4 flex flex-col items-center animate-slideDown"
+            style={{animation: 'slideDown 0.4s cubic-bezier(0.4,0,0.2,1)'}}
+            onClick={e => e.stopPropagation()}
           >
-            {/* Close Button */}
-            <button
-              onClick={() => setShowPreLaunchModal(false)}
-              className="absolute top-4 right-4 text-zinc-400 hover:text-white transition-colors duration-200"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-            
-            <div className="text-center space-y-6">
-              {/* Icon */}
-              <div className="flex justify-center">
-                <div className="w-20 h-20 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-full flex items-center justify-center shadow-lg">
-                  <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-white mb-4">🔄 服务升级中</div>
+              <div className="text-zinc-300 text-center mb-6">
+                项目目前在更换为自有服务中，请期待
               </div>
-              
-              {/* Title */}
-              <div>
-                <h2 className="text-3xl font-bold text-white mb-3 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                  Pre-Launch
-                </h2>
-                <p className="text-zinc-300 text-base leading-relaxed">
-                  项目目前处于 <span className="text-blue-400 font-semibold">Pre-Launch</span> 阶段
-                  <br />
-                  我们正在完善功能和服务，为您带来更好的体验
-                  <br />
-                  <span className="text-purple-400 font-medium">请期待正式发布！</span>
-                </p>
-              </div>
-              
-              {/* Action Button */}
-              <div className="pt-6">
-                <RainbowButton
-                  onClick={() => setShowPreLaunchModal(false)}
-                  className="w-full py-3 text-lg font-semibold"
-                >
-                  了解
-                </RainbowButton>
-              </div>
+              <button 
+                className="px-6 py-2 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors duration-200"
+                onClick={() => setShowServiceUpdateModal(false)}
+              >
+                知道了
+              </button>
             </div>
-          </motion.div>
+          </div>
         </div>
       )}
 

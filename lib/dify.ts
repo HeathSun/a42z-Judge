@@ -57,111 +57,6 @@ const JUDGE_CONFIGS: Record<string, JudgeConfig> = {
   }
 };
 
-// 备用响应生成器
-const generateFallbackResponse = (judgeType: string, githubUrl: string): DifyResponse => {
-  const judgeConfig = JUDGE_CONFIGS[judgeType];
-  const projectName = githubUrl.split('/').pop() || 'Unknown Project';
-  
-  const fallbackResponses: Record<string, string> = {
-    receive_data: `⚠️ 技术分析服务暂时不可用
-
-由于 Dify 模型凭据配置问题，技术同质化分析功能暂时无法使用。
-
-**需要解决的问题：**
-- ChatGPT-4o-latest 模型凭据未初始化
-- 请在 Dify 工作区中配置 OpenAI API 密钥
-
-**项目信息：**
-- 仓库：${githubUrl}
-- 项目名：${projectName}
-
-请参考 DIFY_MODEL_SETUP_GUIDE.md 文件进行配置。`,
-
-    business: `⚠️ 商业分析服务暂时不可用
-
-由于 Dify 模型凭据配置问题，商业潜力分析功能暂时无法使用。
-
-**需要解决的问题：**
-- GPT-4 模型凭据未初始化
-- 请在 Dify 工作区中配置 OpenAI API 密钥
-
-**项目信息：**
-- 仓库：${githubUrl}
-- 项目名：${projectName}
-
-请参考 DIFY_MODEL_SETUP_GUIDE.md 文件进行配置。`,
-
-    sam: `⚠️ Sam Altman 分析服务暂时不可用
-
-由于 Dify 模型凭据配置问题，Sam Altman 视角分析功能暂时无法使用。
-
-**需要解决的问题：**
-- GPT-4 模型凭据未初始化
-- 请在 Dify 工作区中配置 OpenAI API 密钥
-
-**项目信息：**
-- 仓库：${githubUrl}
-- 项目名：${projectName}
-
-请参考 DIFY_MODEL_SETUP_GUIDE.md 文件进行配置。`,
-
-    li: `⚠️ Feifei Li 分析服务暂时不可用
-
-由于 Dify 模型凭据配置问题，Feifei Li 视角分析功能暂时无法使用。
-
-**需要解决的问题：**
-- GPT-4 模型凭据未初始化
-- 请在 Dify 工作区中配置 OpenAI API 密钥
-
-**项目信息：**
-- 仓库：${githubUrl}
-- 项目名：${projectName}
-
-请参考 DIFY_MODEL_SETUP_GUIDE.md 文件进行配置。`,
-
-    ng: `⚠️ Andrew Ng 分析服务暂时不可用
-
-由于 Dify 模型凭据配置问题，Andrew Ng 视角分析功能暂时无法使用。
-
-**需要解决的问题：**
-- GPT-4 模型凭据未初始化
-- 请在 Dify 工作区中配置 OpenAI API 密钥
-
-**项目信息：**
-- 仓库：${githubUrl}
-- 项目名：${projectName}
-
-请参考 DIFY_MODEL_SETUP_GUIDE.md 文件进行配置。`,
-
-    paul: `⚠️ Paul Graham 分析服务暂时不可用
-
-由于 Dify 模型凭据配置问题，Paul Graham 视角分析功能暂时无法使用。
-
-**需要解决的问题：**
-- GPT-4 模型凭据未初始化
-- 请在 Dify 工作区中配置 OpenAI API 密钥
-
-**项目信息：**
-- 仓库：${githubUrl}
-- 项目名：${projectName}
-
-请参考 DIFY_MODEL_SETUP_GUIDE.md 文件进行配置。`
-  };
-
-  return {
-    answer: fallbackResponses[judgeType] || fallbackResponses.business,
-    conversation_id: `fallback_${Date.now()}`,
-    message_id: `fallback_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-    metadata: {
-      usage: {
-        total_tokens: 0,
-        prompt_tokens: 0,
-        completion_tokens: 0
-      }
-    }
-  };
-};
-
 class DifyAPI {
   private baseURL: string;
 
@@ -190,49 +85,32 @@ class DifyAPI {
 
     console.log(`🔄 Sending message to ${judgeConfig.name} via proxy...`);
 
-    try {
-      const response = await fetch(this.baseURL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          judgeType,
-          message,
-          inputs: inputs || {}
-        }),
-      });
+    const response = await fetch(this.baseURL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        judgeType,
+        message,
+        inputs: inputs || {}
+      }),
+    });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error(`❌ Proxy API Error for ${judgeType}:`, errorText);
-        
-        // 检查是否是模型凭据错误
-        if (errorText.includes('credentials is not initialized')) {
-          console.warn(`⚠️ Model credentials not initialized for ${judgeType}, returning fallback response`);
-          const githubUrl = inputs?.repo_url as string || 'Unknown Repository';
-          return generateFallbackResponse(judgeType, githubUrl);
-        }
-        
-        throw new Error(`Proxy API Error: ${response.status} - ${errorText}`);
-      }
-
-      const result = await response.json();
-      
-      if (!result.success) {
-        throw new Error(`Proxy API Error: ${result.error}`);
-      }
-
-      console.log(`✅ Response received from ${judgeConfig.name}`);
-      return result.data as DifyResponse;
-      
-    } catch (error) {
-      console.error(`❌ Error calling ${judgeConfig.name}:`, error);
-      
-      // 如果是网络错误或其他错误，也返回备用响应
-      const githubUrl = inputs?.repo_url as string || 'Unknown Repository';
-      return generateFallbackResponse(judgeType, githubUrl);
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`❌ Proxy API Error for ${judgeType}:`, errorText);
+      throw new Error(`Proxy API Error: ${response.status} - ${errorText}`);
     }
+
+    const result = await response.json();
+    
+    if (!result.success) {
+      throw new Error(`Proxy API Error: ${result.error}`);
+    }
+
+    console.log(`✅ Response received from ${judgeConfig.name}`);
+    return result.data as DifyResponse;
   }
 
   // 技术同质化分析 (使用 receive_data 的 API key)
