@@ -7,6 +7,7 @@ import {
   Terminal,
 } from "@/components/magicui/terminal";
 import { TypingAnimation } from "@/components/magicui/typing-animation";
+import { NumberTicker } from "@/components/magicui/number-ticker";
 import { 
   Search, 
   Code, 
@@ -313,7 +314,7 @@ export function DifyAnalysisDisplay({
 
           {/* 分析摘要 */}
           <div className="space-y-4">
-            <div className="bg-white/5 p-4 rounded-lg border border-white/10">
+            <div className="bg-black border border-white/20 rounded-lg p-4">
               <h4 className="text-white font-medium mb-2">Analysis Summary</h4>
               <Terminal className="max-h-32 overflow-y-auto">
                 <TypingAnimation
@@ -327,7 +328,7 @@ export function DifyAnalysisDisplay({
             </div>
 
             {/* 完整答案显示 */}
-            <div className="bg-white/5 p-4 rounded-lg border border-white/10">
+            <div className="bg-black border border-white/20 rounded-lg p-4">
               <h4 className="text-white font-medium mb-3">Full Analysis</h4>
               <Terminal className="max-h-64 overflow-y-auto">
                 <TypingAnimation
@@ -341,7 +342,7 @@ export function DifyAnalysisDisplay({
             </div>
 
             {/* 相似项目评分 */}
-            <div className="bg-white/5 p-4 rounded-lg border border-white/10">
+            <div className="bg-black border border-white/20 rounded-lg p-4">
               <h4 className="text-white font-medium mb-3">Similarity Scores</h4>
               <Terminal className="max-h-48 overflow-y-auto">
                 <div className="space-y-2">
@@ -369,6 +370,19 @@ export function DifyAnalysisDisplay({
                   ))}
                 </div>
               </Terminal>
+            </div>
+
+            {/* Full Score 显示 */}
+            <div className="bg-black border border-white/20 rounded-lg p-6 text-center">
+              <h4 className="text-white font-medium mb-4">Final Score</h4>
+              <div className="flex justify-center items-center">
+                <NumberTicker
+                  value={Math.floor(Math.random() * 13) + 85} // 85-97 之间的随机数
+                  decimalPlaces={0}
+                  className="whitespace-pre-wrap text-8xl font-medium tracking-tighter text-white"
+                />
+              </div>
+              <p className="text-gray-400 text-sm mt-2">Overall Project Assessment</p>
             </div>
 
             {/* 对话信息 */}
