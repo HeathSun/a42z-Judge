@@ -99,7 +99,7 @@ class DifyAPI {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`❌ Proxy API Error for ${judgeType}:`, errorText);
+      console.error(`❌ Proxy API Error for ${judgeConfig.name}:`, errorText);
       throw new Error(`Proxy API Error: ${response.status} - ${errorText}`);
     }
 
