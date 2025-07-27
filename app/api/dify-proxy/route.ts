@@ -19,7 +19,10 @@ export async function POST(request: NextRequest) {
         apiKey: 'app-dhIC2LKWiF6txqsziyaAPvQy',
         name: 'Technical Analysis'
       },
-      
+      business: {
+        apiKey: 'app-TNEgFjsjZlRSVLaMFtBOOMlr',
+        name: 'Business Analysis'
+      },
       sam: {
         apiKey: 'app-69wonwSInJYTocYMba4OhuYo',
         name: 'Sam Altman'
