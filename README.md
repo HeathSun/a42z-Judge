@@ -291,20 +291,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Hackathon Community**: For feedback and inspiration
 - **AI Research Community**: For advancing the state of AI evaluation
 
-## 📞 Support
-
-- **Documentation**: [docs.a42z.ai](https://docs.a42z.ai)
-- **Issues**: [GitHub Issues](https://github.com/your-org/a42z-home/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/your-org/a42z-home/discussions)
-- **Email**: support@a42z.ai
-
-## 🌐 Links
-
-- **Website**: [a42z.ai](https://a42z.ai)
-- **Demo**: [judge.a42z.ai](https://judge.a42z.ai)
-- **Documentation**: [docs.a42z.ai](https://docs.a42z.ai)
-- **API Reference**: [api.a42z.ai](https://api.a42z.ai)
-
 ---
 
 **Built with ❤️ for the hackathon community**
