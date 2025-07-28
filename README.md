@@ -280,10 +280,6 @@ We welcome contributions from the community! Here's how you can help:
 - Write meaningful commit messages
 - Add tests for new features
 
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
 ## 🙏 Acknowledgments
 
 - **Tech Leaders**: Inspired by the insights of Andrew Ng, Paul Graham, Feifei Li, and Sam Altman
