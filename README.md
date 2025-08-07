@@ -1,4 +1,4 @@
-# a42z - The World's First AI Judge for Hackathons
+# a42z Judge - The World's First AI Judge for Hackathons
 
 [![Next.js](https://img.shields.io/badge/Next.js-15.2.4-black)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
@@ -6,11 +6,11 @@
 
 > **Building the Trust Layer for the AI Era - Capturing Real Signals Beyond the Hype**
 
-a42z is the world's first autonomous, insightful, and fair AI judging system for hackathons. We're creating a comprehensive evaluation engine that combines multimodal AI analysis with expert knowledge to deliver transparent, explainable, and bias-reduced assessment results.
+a42z Judge Judge is the world's first autonomous, insightful, and fair AI judging system for hackathons built by the team a42z. We're creating a comprehensive evaluation engine that combines multimodal AI analysis with expert knowledge to deliver transparent, explainable, and bias-reduced assessment results.
 
 ## 🌟 Vision
 
-In the AI era, we need a new paradigm for evaluating innovation. Traditional hackathon judging relies heavily on subjective human judgment, leading to inconsistencies and missed opportunities. a42z addresses this by creating a sophisticated AI-powered evaluation system that:
+In the AI era, we need a new paradigm for evaluating innovation. Traditional hackathon judging relies heavily on subjective human judgment, leading to inconsistencies and missed opportunities. a42z Judge addresses this by creating a sophisticated AI-powered evaluation system that:
 
 - **Cross-references** project materials (code, demo decks, PRDs) against open-source repositories and past winning cases
 - **Leverages** quality signals like GitHub stars, activity metrics, and code quality indicators
@@ -115,8 +115,8 @@ AI twins of tech industry leaders providing structured evaluations:
 
 1. **Clone the repository**
 ```bash
-git clone https://github.com/your-org/a42z-home.git
-cd a42z-home
+git clone https://github.com/your-org/a42z Judge-home.git
+cd a42z Judge-home
 ```
 
 2. **Install dependencies**
