@@ -1,4 +1,4 @@
-# a42z Judge - The World's First AI Judge for Hackathons
+# a42z Judge - The World's 1st Agentic Hackathon Judge
 
 [![Next.js](https://img.shields.io/badge/Next.js-15.2.4-black)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
