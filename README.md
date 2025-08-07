@@ -115,8 +115,8 @@ AI twins of tech industry leaders providing structured evaluations:
 
 1. **Clone the repository**
 ```bash
-git clone https://github.com/your-org/a42z Judge-home.git
-cd a42z Judge-home
+git clone https://github.com/your-org/a42z-judge.git
+cd a42z-judge
 ```
 
 2. **Install dependencies**
