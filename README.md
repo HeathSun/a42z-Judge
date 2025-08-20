@@ -8,6 +8,8 @@
 
 a42z Judge is the world's first autonomous, insightful, and fair AI judging system for hackathons built by the team a42z. We're creating a comprehensive evaluation engine that combines multimodal AI analysis with expert knowledge to deliver transparent, explainable, and bias-reduced assessment results.
 
+![Agentic System Architecture](roadmap.png) *Agentic System Architecture*
+
 ## 🌟 Vision
 
 In the AI era, we need a new paradigm for evaluating innovation. Traditional hackathon judging relies heavily on subjective human judgment, leading to inconsistencies and missed opportunities. a42z Judge addresses this by creating a sophisticated AI-powered evaluation system that:
